@@ -2,339 +2,266 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <!-- Thẻ meta bắt buộc để nhận diện màn hình điện thoại -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>API Master Tester - Glassmorphism</title>
+  <title>API Master Console - Integrated</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
 
     :root { 
-      --primary: #4f46e5; --primary-hover: #4338ca;
-      --success: #10b981; --success-hover: #059669;
-      --danger: #ef4444; --text-main: #1e293b; --text-muted: #64748b;
-      --glass-bg: rgba(255, 255, 255, 0.7);
-      --glass-border: rgba(255, 255, 255, 0.4);
+      --primary: #4f46e5; --primary-light: #e0e7ff;
+      --success: #059669; --success-bg: #d1fae5;
+      --bank-color: #0284c7; --bank-bg: #e0f2fe;
+      --danger: #dc2626; --text-main: #0f172a; --text-muted: #64748b;
+      --bg-app: #f8fafc; --card-bg: #ffffff; --border-color: #e2e8f0;
     }
     
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
     
-    /* Nền Gradient mượt mà */
     body { 
-      background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
-      color: var(--text-main); 
-      display: flex; 
-      height: 100vh; 
-      gap: 20px; 
-      padding: 20px;
-      overflow: hidden;
+      background: var(--bg-app); color: var(--text-main); 
+      display: flex; height: 100vh; gap: 16px; padding: 16px; overflow: hidden;
     }
 
-    /* ========================================= */
-    /* CỘT TRÁI: KHUNG FORM NHẬP LỆNH */
-    /* ========================================= */
     .panel-left { 
-      flex: 1.2; 
-      overflow-y: auto; 
-      padding-right: 10px; 
-      display: flex; 
-      flex-direction: column; 
-      gap: 20px; 
-      padding-bottom: 40px;
+      flex: 1.1; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; padding-bottom: 20px;
     }
-    
-    /* Thanh cuộn tàng hình/đẹp */
-    .panel-left::-webkit-scrollbar { width: 6px; }
-    .panel-left::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+    .panel-left::-webkit-scrollbar { width: 4px; }
+    .panel-left::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     
     .config-box { 
-      background: rgba(254, 226, 226, 0.6); 
-      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(252, 165, 165, 0.5); 
-      padding: 18px; 
-      border-radius: 20px; 
-      box-shadow: 0 10px 25px rgba(239, 68, 68, 0.05);
+      background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px 14px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between;
     }
-    
-    .config-box input { 
-      width: 100%; padding: 12px 16px; margin-top: 10px; 
-      border: 2px solid #fca5a5; border-radius: 12px; 
-      font-family: 'JetBrains Mono', monospace; font-size: 14px;
-      background: rgba(255,255,255,0.9); outline: none; transition: 0.3s;
-    }
-    .config-box input:focus { border-color: var(--danger); box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1); }
-    
-    .section-title { 
-      font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
-      background: #1e293b; color: white; padding: 12px 20px; border-radius: 14px; 
-      position: sticky; top: 0; z-index: 10;
-      box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.2);
-    }
-    
-    .card { 
-      background: var(--glass-bg); 
-      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--glass-border); 
-      border-radius: 20px; padding: 20px; 
-      box-shadow: 0 10px 30px rgba(0,0,0,0.03); 
-    }
-    .card h3 { margin: 0 0 16px 0; font-size: 15px; color: var(--primary); display: flex; justify-content: space-between; align-items: center;}
-    
-    .input-row { display: flex; gap: 12px; margin-bottom: 14px; }
-    input[type="text"], input[type="number"] { 
-      flex: 1; padding: 12px 16px; border: 1px solid rgba(0,0,0,0.1); 
-      border-radius: 12px; outline: none; font-size: 14px; font-weight: 600;
-      background: rgba(255,255,255,0.6); transition: 0.3s;
-    }
-    input::placeholder { color: #94a3b8; font-weight: 400; }
-    input:focus { background: #fff; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15); }
-    
-    button { 
-      background: var(--primary); color: white; border: none; padding: 12px 20px; 
-      border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 14px;
-      transition: all 0.2s; white-space: nowrap;
-      box-shadow: 0 8px 15px rgba(79, 70, 229, 0.2);
-    }
-    button:hover { background: var(--primary-hover); transform: translateY(-2px); }
-    button:active { transform: scale(0.96); }
-    button.btn-get { background: var(--success); width: 100%; box-shadow: 0 8px 15px rgba(16, 185, 129, 0.2); }
-    button.btn-get:hover { background: var(--success-hover); }
+    .config-box span { font-size: 11px; font-weight: 700; color: var(--success); text-transform: uppercase; }
 
-    /* ========================================= */
-    /* CỘT PHẢI: CONSOLE HIỂN THỊ (TERMINAL) */
-    /* ========================================= */
+    .tab-container { display: flex; gap: 8px; background: #e2e8f0; padding: 4px; border-radius: 12px; }
+    .tab-btn { 
+      flex: 1; padding: 10px; border: none; background: transparent; 
+      font-size: 13px; font-weight: 700; color: var(--text-muted); border-radius: 8px; cursor: pointer; transition: 0.2s; 
+    }
+    .tab-btn.active.pay { background: #fff; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .tab-btn.active.bank { background: #fff; color: var(--bank-color); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+    .action-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .action-btn { 
+      padding: 10px 4px; border: 1px solid var(--border-color); background: #fff; 
+      font-size: 12px; font-weight: 600; color: var(--text-muted); border-radius: 10px; cursor: pointer; text-align: center; transition: 0.2s; 
+    }
+    .action-btn.active-pay { background: var(--primary); color: #fff; border-color: var(--primary); font-weight: 700; }
+    .action-btn.active-bank { background: var(--bank-color); color: #fff; border-color: var(--bank-color); font-weight: 700; }
+
+    .form-card { 
+      background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 16px; display: none; 
+    }
+    .form-card.active { display: block; animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    .form-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--text-main); }
+    
+    .input-group { margin-bottom: 10px; }
+    .input-group label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
+    
+    input[type="text"], input[type="number"] { 
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; font-size: 13px; font-weight: 500; background: #fff;
+    }
+    input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+    
+    .submit-btn { 
+      width: 100%; margin-top: 10px; padding: 11px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
+    }
+    .submit-btn.bank-theme { background: var(--bank-color); box-shadow: 0 4px 10px rgba(2, 132, 199, 0.2); }
+
     .panel-right { 
-      flex: 1; 
-      background: #0f172a; 
-      border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; 
-      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4);
-      border: 1px solid rgba(255,255,255,0.1);
+      flex: 1; background: #0f172a; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.15);
     }
     .console-header { 
-      background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(10px);
-      color: #94a3b8; padding: 14px 20px; font-weight: 800; font-size: 13px; 
-      display: flex; justify-content: space-between; align-items: center;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+      background: #1e293b; color: #94a3b8; padding: 12px 16px; font-weight: 700; font-size: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155;
     }
-    .console-header button { 
-      background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 6px 12px; 
-      font-size: 12px; box-shadow: none; 
-    }
-    .console-header button:hover { background: var(--danger); color: white; }
+    .console-header button { background: #334155; color: #f87171; border: none; padding: 4px 10px; font-size: 11px; border-radius: 6px; cursor: pointer; font-weight: 600;}
     
     #output { 
-      flex: 1; margin: 0; padding: 20px; color: #34d399; 
-      font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6;
-      overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; 
+      flex: 1; margin: 0; padding: 16px; color: #34d399; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.5; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; 
     }
-    #output::-webkit-scrollbar { width: 8px; }
-    #output::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-    
-    .req-info { color: #38bdf8; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px dashed rgba(255,255,255,0.1);}
-    .hint { font-size: 11px; color: #94a3b8; font-weight: 600; background: rgba(255,255,255,0.5); padding: 4px 8px; border-radius: 8px;}
+    .req-info { color: #38bdf8; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #334155;}
 
-    /* ========================================= */
-    /* RESPONSIVE CHO ĐIỆN THOẠI (MOBILE MODE) */
-    /* ========================================= */
     @media (max-width: 768px) {
-      body { 
-        flex-direction: column; 
-        height: auto; 
-        overflow-y: auto; 
-        padding: 12px;
-      }
-      .panel-left { padding-right: 0; padding-bottom: 10px; }
-      .panel-right { min-height: 500px; margin-bottom: 40px; }
-      
-      .input-row { flex-direction: column; gap: 10px; }
-      .input-row button { width: 100%; } /* Nút bóp full viền trên ĐT */
-      
-      .section-title { position: static; text-align: center; }
-      .config-box, .card, .panel-right { border-radius: 16px; }
+      body { flex-direction: column; height: auto; overflow-y: auto; padding: 10px; }
+      .panel-left { overflow: visible; }
+      .panel-right { min-height: 400px; margin-bottom: 20px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ==================== CỘT TRÁI ==================== -->
   <div class="panel-left">
-    
     <div class="config-box">
-      <strong>🔗 Dán Web App URL (Google Apps Script) vào đây:</strong>
-      <input type="text" id="apiUrl" placeholder="https://script.google.com/macros/s/..../exec">
+      <span>🟢 API Endpoint đã gắn sẵn</span>
+      <span style="font-family: monospace; font-size: 10px; color: #64748b;">..._mMGVONdSZnzhr_tj7UoRlKJTMz-TQYSYfg/exec</span>
     </div>
 
-    <!-- THANH TOÁN -->
-    <h2 class="section-title">🟢 Bảng: Thanh Toán</h2>
-    <div class="card">
-      <button class="btn-get" onclick="testAPI('Thanh toán', 'get')">1. Lấy tất cả Giao dịch (get)</button>
-    </div>
-    
-    <div class="card">
-      <h3>2. Tạo giao dịch mới (add)</h3>
-      <div class="input-row">
-        <input type="number" id="pay_add_amount" placeholder="Nhập Số tiền (VD: 50000)">
-        <button onclick="testAPI('Thanh toán', 'add')">Gửi lệnh</button>
-      </div>
-    </div>
-    
-    <div class="card">
-      <h3>3. Sửa thông số (edit) <span class="hint">Để trống = Không sửa</span></h3>
-      <div class="input-row">
-        <input type="text" id="pay_edit_id" placeholder="ID (Bắt buộc) VD: 260902123456" style="border-color: #fca5a5;">
-        <input type="number" id="pay_edit_amount" placeholder="Số tiền mới">
-      </div>
-      <div class="input-row">
-        <input type="text" id="pay_edit_content" placeholder="Nội dung mới">
-        <input type="text" id="pay_edit_status" placeholder="Trạng thái mới">
-      </div>
-      <div class="input-row">
-        <input type="text" id="pay_edit_time" placeholder="TG Hoàn tất (15:30 02/09)">
-        <button onclick="testAPI('Thanh toán', 'edit')" style="width: 120px;">Gửi lệnh</button>
-      </div>
-    </div>
-    
-    <div class="card">
-      <h3>4. Kiểm tra 1 đơn (check)</h3>
-      <div class="input-row">
-        <input type="text" id="pay_check_id" placeholder="Nhập ID Giao dịch cần tra...">
-        <button onclick="testAPI('Thanh toán', 'check')">Gửi lệnh</button>
-      </div>
+    <div class="tab-container">
+      <button class="tab-btn active pay" id="tabPayBtn" onclick="switchTab('Thanh toán')">🟢 Thanh toán</button>
+      <button class="tab-btn bank" id="tabBankBtn" onclick="switchTab('Ngân hàng')">🔵 Ngân hàng</button>
     </div>
 
-    <!-- NGÂN HÀNG -->
-    <h2 class="section-title" style="background: #0284c7;">🔵 Bảng: Ngân Hàng</h2>
-    <div class="card">
-      <button class="btn-get" style="background: #0284c7; box-shadow: 0 8px 15px rgba(2, 132, 199, 0.2);" onclick="testAPI('Ngân hàng', 'get')">1. Lấy tất cả Ngân hàng (get)</button>
+    <div class="action-bar">
+      <button class="action-btn active-pay" id="act-get" onclick="switchAction('get')">📦 Lấy tất cả</button>
+      <button class="action-btn" id="act-add" onclick="switchAction('add')">➕ Tạo mới</button>
+      <button class="action-btn" id="act-edit" onclick="switchAction('edit')">✏️ Sửa đổi</button>
+      <button class="action-btn" id="act-check" onclick="switchAction('check')">🔍 Kiểm tra</button>
     </div>
-    
-    <div class="card">
-      <h3>2. Thêm Ngân hàng (add)</h3>
-      <div class="input-row">
-        <input type="text" id="bank_add_bin" placeholder="Mã BIN (970422)">
-        <input type="text" id="bank_add_accNumber" placeholder="Số Tài khoản">
-      </div>
-      <div class="input-row">
-        <input type="text" id="bank_add_accOwner" placeholder="Tên chủ Tài khoản">
-        <button onclick="testAPI('Ngân hàng', 'add')" style="width: 120px;">Gửi lệnh</button>
-      </div>
+
+    <!-- 1. GET -->
+    <div class="form-card active" id="form-get">
+      <div class="form-title">📦 Xem toàn bộ dữ liệu</div>
+      <button class="submit-btn" onclick="executeCurrentAction()">Chạy lệnh Get</button>
     </div>
-    
-    <div class="card">
-      <h3>3. Sửa thông số (edit) <span class="hint">Để trống = Không sửa</span></h3>
-      <div class="input-row">
-        <input type="text" id="bank_edit_id" placeholder="ID NH (Bắt buộc) VD: BK123456" style="border-color: #fca5a5;">
-        <input type="text" id="bank_edit_bin" placeholder="Mã BIN mới">
+
+    <!-- 2. ADD -->
+    <div class="form-card" id="form-add">
+      <div class="form-title">➕ Thêm dữ liệu mới</div>
+      <div id="add-fields-pay">
+        <div class="input-group"><label>Số tiền giao dịch:</label><input type="number" id="pay_add_amount" placeholder="VD: 100000"></div>
       </div>
-      <div class="input-row">
-        <input type="text" id="bank_edit_accNumber" placeholder="Số TK mới">
-        <input type="text" id="bank_edit_accOwner" placeholder="Tên chủ TK mới">
+      <div id="add-fields-bank" style="display: none;">
+        <div class="input-group"><label>Mã BIN Ngân hàng:</label><input type="text" id="bank_add_bin" placeholder="VD: 970422"></div>
+        <div class="input-group"><label>Số tài khoản:</label><input type="text" id="bank_add_accNumber" placeholder="VD: 0123456789"></div>
+        <div class="input-group"><label>Tên chủ tài khoản (Không dấu):</label><input type="text" id="bank_add_accOwner" placeholder="VD: DINH VIET TRUONG"></div>
       </div>
-      <div class="input-row">
-        <input type="text" id="bank_edit_status" placeholder="Trạng thái (Hoạt động / Không hoạt động)">
-        <button onclick="testAPI('Ngân hàng', 'edit')" style="width: 120px;">Gửi lệnh</button>
-      </div>
+      <button class="submit-btn" id="btnRunAdd" onclick="executeCurrentAction()">Xác nhận Thêm</button>
     </div>
-    
-    <div class="card">
-      <h3>4. Kiểm tra 1 tài khoản (check)</h3>
-      <div class="input-row">
-        <input type="text" id="bank_check_id" placeholder="Nhập ID Ngân hàng cần tra...">
-        <button onclick="testAPI('Ngân hàng', 'check')">Gửi lệnh</button>
+
+    <!-- 3. EDIT -->
+    <div class="form-card" id="form-edit">
+      <div class="form-title">✏️ Sửa thông số (Gửi gì sửa nấy)</div>
+      <div id="edit-fields-pay">
+        <div class="input-group"><label>ID Giao dịch (Bắt buộc):</label><input type="text" id="pay_edit_id" placeholder="VD: 260902123456"></div>
+        <div class="input-group"><label>Số tiền mới:</label><input type="number" id="pay_edit_amount" placeholder="Bỏ trống nếu giữ nguyên"></div>
+        <div class="input-group"><label>Nội dung mới:</label><input type="text" id="pay_edit_content" placeholder="Bỏ trống nếu giữ nguyên"></div>
+        <div class="input-group"><label>Trạng thái mới:</label><input type="text" id="pay_edit_status" placeholder="VD: Hoàn tất"></div>
+        <div class="input-group"><label>Thời gian TT mới:</label><input type="text" id="pay_edit_time" placeholder="VD: 15:30 02/09"></div>
       </div>
+      <div id="edit-fields-bank" style="display: none;">
+        <div class="input-group"><label>ID Ngân hàng (Bắt buộc):</label><input type="text" id="bank_edit_id" placeholder="VD: BK123456"></div>
+        <div class="input-group"><label>Mã BIN mới:</label><input type="text" id="bank_edit_bin" placeholder="Đổi BIN tự load Logo mới"></div>
+        <div class="input-group"><label>Số tài khoản mới:</label><input type="text" id="bank_edit_accNumber" placeholder="Bỏ trống nếu giữ nguyên"></div>
+        <div class="input-group"><label>Tên chủ tài khoản mới:</label><input type="text" id="bank_edit_accOwner" placeholder="Bỏ trống nếu giữ nguyên"></div>
+        <div class="input-group"><label>Trạng thái mới:</label><input type="text" id="bank_edit_status" placeholder="Hoạt động / Không hoạt động"></div>
+      </div>
+      <button class="submit-btn" id="btnRunEdit" onclick="executeCurrentAction()">Lưu thay đổi</button>
+    </div>
+
+    <!-- 4. CHECK -->
+    <div class="form-card" id="form-check">
+      <div class="form-title">🔍 Tra cứu 1 hàng dữ liệu</div>
+      <div class="input-group">
+        <label id="check-label-id">Nhập ID cần kiểm tra:</label>
+        <input type="text" id="target_check_id" placeholder="Dán mã ID vào đây...">
+      </div>
+      <button class="submit-btn" id="btnRunCheck" onclick="executeCurrentAction()">Tiến hành tra cứu</button>
     </div>
   </div>
 
-  <!-- ==================== CỘT PHẢI ==================== -->
   <div class="panel-right" id="consolePanel">
     <div class="console-header">
       <span>🖥️ System Console</span>
-      <button onclick="document.getElementById('output').innerHTML=''">Làm sạch</button>
+      <button onclick="document.getElementById('output').innerHTML=''">Xóa màn hình</button>
     </div>
-    <pre id="output">🚀 Trạm Test API đã sẵn sàng! Dán URL và bắt đầu thôi...</pre>
+    <pre id="output">🚀 Đã kết nối sẵn sàng tới Web App của bạn! Chọn Tab và bấm lệnh...</pre>
   </div>
 
   <script>
-    // Hàm hỗ trợ tự động cuộn xuống Console khi dùng trên điện thoại
-    function scrollToConsole() {
-      if (window.innerWidth <= 768) {
-        document.getElementById('consolePanel').scrollIntoView({ behavior: 'smooth' });
-      }
+    // Link API đã gắn cứng sẵn
+    const FIXED_API_URL = "https://script.google.com/macros/s/AKfycbzgeZU6ik9YDR8_dmP8cqsjlWOVyW-lX9J_mMGVONdSZnzhr_tj7UoRlKJTMz-TQYSYfg/exec";
+    
+    let currentSheet = 'Thanh toán';
+    let currentAction = 'get';
+
+    function switchTab(sheetName) {
+      currentSheet = sheetName;
+      const isPay = (sheetName === 'Thanh toán');
+      
+      document.getElementById('tabPayBtn').className = `tab-btn pay ${isPay ? 'active' : ''}`;
+      document.getElementById('tabBankBtn').className = `tab-btn bank ${!isPay ? 'active' : ''}`;
+      
+      document.querySelectorAll('.action-btn').forEach(btn => {
+        btn.className = `action-btn ${isPay ? 'active-pay' : 'active-bank'}`;
+      });
+      
+      document.querySelectorAll('.submit-btn').forEach(btn => {
+        if (isPay) btn.classList.remove('bank-theme');
+        else btn.classList.add('bank-theme');
+      });
+
+      document.getElementById('add-fields-pay').style.display = isPay ? 'block' : 'none';
+      document.getElementById('add-fields-bank').style.display = isPay ? 'none' : 'block';
+      document.getElementById('edit-fields-pay').style.display = isPay ? 'block' : 'none';
+      document.getElementById('edit-fields-bank').style.display = isPay ? 'none' : 'block';
+      document.getElementById('check-label-id').innerText = isPay ? 'Nhập ID Giao dịch:' : 'Nhập ID Ngân hàng:';
+
+      switchAction(currentAction);
     }
 
-    function logOutput(payload, response = null, error = null) {
-      const out = document.getElementById('output');
-      let html = `<div class="req-info"><strong>📦 GỬI ĐI (POST):</strong>\n${JSON.stringify(payload, null, 2)}</div>`;
-      
-      if (error) {
-        html += `<span style="color: #ef4444;">❌ LỖI MẠNG: ${error}</span>\n`;
-        html += `<span style="color: #f87171; font-size: 12px;">-> Vui lòng Deploy lại Web App và BẮT BUỘC chọn "Who has access: Anyone".</span>\n\n`;
-      } else if (response) {
-        let resColor = response.success ? "#34d399" : "#f87171";
-        let icon = response.success ? "✅" : "⚠️";
-        html += `<strong style="color:${resColor}">${icon} TRẢ VỀ:</strong>\n<span style="color:${resColor}">${JSON.stringify(response, null, 2)}</span>\n\n`;
-      } else {
-        html += `<span style="color: #f59e0b;">⏳ Đang chờ máy chủ xử lý...</span>\n\n`;
-      }
-      
-      out.innerHTML = html + "---------------------------------------\n" + out.innerHTML;
+    function switchAction(actionName) {
+      currentAction = actionName;
+      ['get', 'add', 'edit', 'check'].forEach(act => {
+        const btn = document.getElementById(`act-${act}`);
+        const isSelected = (act === actionName);
+        const isPay = (currentSheet === 'Thanh toán');
+        
+        btn.style.background = isSelected ? (isPay ? 'var(--primary)' : 'var(--bank-color)') : '#fff';
+        btn.style.color = isSelected ? '#fff' : 'var(--text-muted)';
+        btn.style.borderColor = isSelected ? (isPay ? 'var(--primary)' : 'var(--bank-color)') : 'var(--border-color)';
+      });
+
+      ['get', 'add', 'edit', 'check'].forEach(act => {
+        document.getElementById(`form-${act}`).classList.remove('active');
+      });
+      document.getElementById(`form-${actionName}`).classList.add('active');
     }
 
-    function testAPI(sheetName, action) {
-      let url = document.getElementById('apiUrl').value.trim();
-      if (!url) {
-        alert('Vui lòng dán Web App URL vào ô trên cùng!');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
-      }
-      
-      // Tự sửa lỗi nếu dán nhầm link /edit
-      if (url.endsWith('/edit')) {
-        url = url.replace('/edit', '/exec');
-        document.getElementById('apiUrl').value = url;
-      }
-      if (!url.endsWith('/exec')) return alert("URL không đúng định dạng. Phải kết thúc bằng /exec");
+    function executeCurrentAction() {
+      let payload = { sheet: currentSheet, action: currentAction };
 
-      let payload = { sheet: sheetName, action: action };
-
-      // LẤY DỮ LIỆU TỪ FORM THEO ĐÚNG NÚT ĐƯỢC BẤM
-      if (sheetName === 'Thanh toán') {
-        if (action === 'add') {
+      if (currentAction === 'add') {
+        if (currentSheet === 'Thanh toán') {
           payload.amount = document.getElementById('pay_add_amount').value;
-          if(!payload.amount) return alert('Nhập số tiền!');
-        } else if (action === 'edit') {
-          payload.id = document.getElementById('pay_edit_id').value;
-          if(!payload.id) return alert('Nhập ID!');
-          let amt = document.getElementById('pay_edit_amount').value, stt = document.getElementById('pay_edit_status').value;
-          let cnt = document.getElementById('pay_edit_content').value, time = document.getElementById('pay_edit_time').value;
-          if(amt) payload.amount = amt; if(stt) payload.status = stt; if(cnt) payload.content = cnt; if(time) payload.paymentTime = time;
-        } else if (action === 'check') {
-          payload.id = document.getElementById('pay_check_id').value;
-          if(!payload.id) return alert('Nhập ID!');
-        }
-      } else if (sheetName === 'Ngân hàng') {
-        if (action === 'add') {
+          if(!payload.amount) return alert('Vui lòng nhập số tiền!');
+        } else {
           payload.bin = document.getElementById('bank_add_bin').value;
           payload.accNumber = document.getElementById('bank_add_accNumber').value;
           payload.accOwner = document.getElementById('bank_add_accOwner').value;
-          if(!payload.bin || !payload.accNumber || !payload.accOwner) return alert('Nhập đủ thông tin NH!');
-        } else if (action === 'edit') {
-          payload.id = document.getElementById('bank_edit_id').value;
-          if(!payload.id) return alert('Nhập ID!');
-          let bin = document.getElementById('bank_edit_bin').value, acc = document.getElementById('bank_edit_accNumber').value;
-          let owner = document.getElementById('bank_edit_accOwner').value, stt = document.getElementById('bank_edit_status').value;
-          if(bin) payload.bin = bin; if(acc) payload.accNumber = acc; if(owner) payload.accOwner = owner; if(stt) payload.status = stt;
-        } else if (action === 'check') {
-          payload.id = document.getElementById('bank_check_id').value;
-          if(!payload.id) return alert('Nhập ID!');
+          if(!payload.bin || !payload.accNumber || !payload.accOwner) return alert('Vui lòng nhập đủ thông tin!');
         }
+      } else if (currentAction === 'edit') {
+        if (currentSheet === 'Thanh toán') {
+          payload.id = document.getElementById('pay_edit_id').value;
+          if(!payload.id) return alert('Bắt buộc nhập ID giao dịch!');
+          let amt = document.getElementById('pay_edit_amount').value;
+          let cnt = document.getElementById('pay_edit_content').value;
+          let stt = document.getElementById('pay_edit_status').value;
+          let time = document.getElementById('pay_edit_time').value;
+          if(amt) payload.amount = amt; if(cnt) payload.content = cnt; if(stt) payload.status = stt; if(time) payload.paymentTime = time;
+        } else {
+          payload.id = document.getElementById('bank_edit_id').value;
+          if(!payload.id) return alert('Bắt buộc nhập ID ngân hàng!');
+          let bin = document.getElementById('bank_edit_bin').value;
+          let acc = document.getElementById('bank_edit_accNumber').value;
+          let owner = document.getElementById('bank_edit_accOwner').value;
+          let stt = document.getElementById('bank_edit_status').value;
+          if(bin) payload.bin = bin; if(acc) payload.accNumber = acc; if(owner) payload.accOwner = owner; if(stt) payload.status = stt;
+        }
+      } else if (currentAction === 'check') {
+        payload.id = document.getElementById('target_check_id').value;
+        if(!payload.id) return alert('Vui lòng nhập ID cần tra cứu!');
       }
 
-      // Xử lý Giao diện
-      scrollToConsole();
+      if (window.innerWidth <= 768) {
+        document.getElementById('consolePanel').scrollIntoView({ behavior: 'smooth' });
+      }
+
       logOutput(payload);
       
-      // Gửi Request HTTP POST
-      fetch(url, {
+      fetch(FIXED_API_URL, {
         method: 'POST',
         redirect: 'follow', 
         headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
@@ -343,6 +270,23 @@
       .then(res => res.json())
       .then(data => { logOutput(payload, data); })
       .catch(err => { logOutput(payload, null, err.message); });
+    }
+
+    function logOutput(payload, response = null, error = null) {
+      const out = document.getElementById('output');
+      let html = `<div class="req-info"><strong>📦 GỬI ĐI (${payload.sheet} -> ${payload.action}):</strong>\n${JSON.stringify(payload, null, 2)}</div>`;
+      
+      if (error) {
+        html += `<span style="color: #ef4444;">❌ LỖI MẠNG: ${error}</span>\n\n`;
+      } else if (response) {
+        let resColor = response.success ? "#34d399" : "#f87171";
+        let icon = response.success ? "✅" : "⚠️";
+        html += `<strong style="color:${resColor}">${icon} PHẢN HỒI:</strong>\n<span style="color:${resColor}">${JSON.stringify(response, null, 2)}</span>\n\n`;
+      } else {
+        html += `<span style="color: #f59e0b;">⏳ Đang gửi yêu cầu...</span>\n\n`;
+      }
+      
+      out.innerHTML = html + "---------------------------------------\n" + out.innerHTML;
     }
   </script>
 </body>
