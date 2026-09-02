@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trạm Kiểm Thử JSON POST - API</title>
+  <style>
+    :root { --bg: #f1f5f9; --card: #ffffff; --primary: #2563eb; --text: #1e293b; --border: #cbd5e1; }
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 20px; margin: 0; display: flex; justify-content: center; }
+    .container { width: 100%; max-width: 1000px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
+    
+    .panel { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 15px; }
+    h2 { margin: 0; font-size: 1.2rem; color: var(--text); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+    
+    .form-group { display: flex; flex-direction: column; gap: 8px; }
+    label { font-weight: bold; font-size: 14px; }
+    input[type="text"] { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-family: monospace; font-size: 13px; }
+    input[type="text"]:focus { outline: 2px solid var(--primary); }
+    
+    textarea { flex: 1; min-height: 300px; padding: 15px; border: 1px solid var(--border); border-radius: 6px; font-family: 'Courier New', Courier, monospace; font-size: 14px; resize: vertical; line-height: 1.5; background: #f8fafc; }
+    textarea:focus { outline: 2px solid var(--primary); background: #ffffff; }
+    
+    .btn { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn:hover { background: #1d4ed8; }
+    .btn:active { transform: scale(0.98); }
+    
+    .quick-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+    .btn-small { background: #e2e8f0; color: #334155; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+    .btn-small:hover { background: #cbd5e1; }
+
+    /* Output Console */
+    .console-box { flex: 1; background: #0f172a; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; }
+    .console-header { background: #1e293b; padding: 8px 15px; color: #94a3b8; font-size: 12px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+    #output { padding: 15px; margin: 0; color: #10b981; font-family: 'Courier New', Courier, monospace; font-size: 13px; overflow-y: auto; flex: 1; white-space: pre-wrap; word-wrap: break-word; }
+    .error-text { color: #ef4444; }
+    .wait-text { color: #f59e0b; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- CỘT TRÁI: NHẬP LIỆU -->
+    <div class="panel">
+      <h2>🚀 Soạn Lệnh Gửi API</h2>
+      
+      <div class="form-group">
+        <label>🔗 URL Google Script (Web App):</label>
+        <input type="text" id="apiUrl" placeholder="https://script.google.com/macros/s/.../exec">
+      </div>
+
+      <div class="form-group">
+        <label>Mẫu JSON nhanh:</label>
+        <div class="quick-buttons">
+          <button class="btn-small" onclick="loadTemplate(1)">Lấy Giao Dịch</button>
+          <button class="btn-small" onclick="loadTemplate(2)">Tạo Giao Dịch</button>
+          <button class="btn-small" onclick="loadTemplate(3)">Sửa Giao Dịch</button>
+          <button class="btn-small" onclick="loadTemplate(4)">Lấy Ngân Hàng</button>
+          <button class="btn-small" onclick="loadTemplate(5)">Thêm Ngân Hàng</button>
+          <button class="btn-small" onclick="loadTemplate(6)">Sửa Ngân Hàng (Full)</button>
+        </div>
+      </div>
+
+      <div class="form-group" style="flex: 1;">
+        <label>📦 JSON Payload:</label>
+        <textarea id="jsonInput">
+{
+  "sheet": "Thanh toán",
+  "action": "get"
+}
+        </textarea>
+      </div>
+
+      <button class="btn" onclick="sendRequest()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        BẮN LỆNH (Gửi POST)
+      </button>
+    </div>
+
+    <!-- CỘT PHẢI: KẾT QUẢ TRẢ VỀ -->
+    <div class="panel">
+      <h2>🖥️ Server Response</h2>
+      <div class="console-box">
+        <div class="console-header">
+          <span>Kết quả trả về từ API</span>
+          <button class="btn-small" onclick="document.getElementById('output').innerHTML=''" style="padding: 2px 8px; background: #ef4444; color: white;">Xóa</button>
+        </div>
+        <pre id="output">Hãy nhập JSON bên trái và bấm GỬI POST để xem kết quả...</pre>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Các mẫu JSON
+    const templates = {
+      1: `{\n  "sheet": "Thanh toán",\n  "action": "get"\n}`,
+      2: `{\n  "sheet": "Thanh toán",\n  "action": "add",\n  "amount": 500000\n}`,
+      3: `{\n  "sheet": "Thanh toán",\n  "action": "edit",\n  "id": "260902123456",\n  "status": "Hoàn tất",\n  "paymentTime": "15:30:00 02/09/2026"\n}`,
+      4: `{\n  "sheet": "Ngân hàng",\n  "action": "get"\n}`,
+      5: `{\n  "sheet": "Ngân hàng",\n  "action": "add",\n  "bin": "970422",\n  "accNumber": "0123456789",\n  "accOwner": "DINH VIET TRUONG"\n}`,
+      6: `{\n  "sheet": "Ngân hàng",\n  "action": "edit",\n  "id": "BK123456",\n  "bin": "970415",\n  "accNumber": "0987654321",\n  "accOwner": "NGUYEN VAN B",\n  "status": "Hoạt động"\n}`
+    };
+
+    function loadTemplate(id) {
+      document.getElementById('jsonInput').value = templates[id];
+    }
+
+    function sendRequest() {
+      const url = document.getElementById('apiUrl').value.trim();
+      const jsonText = document.getElementById('jsonInput').value.trim();
+      const output = document.getElementById('output');
+
+      if (!url) {
+        alert("Vui lòng nhập URL Google Script!");
+        document.getElementById('apiUrl').focus();
+        return;
+      }
+
+      // Kiểm tra xem JSON nhập vào có chuẩn cú pháp không
+      let payload;
+      try {
+        payload = JSON.parse(jsonText);
+      } catch (e) {
+        output.innerHTML = `<span class="error-text">❌ LỖI CÚ PHÁP JSON:</span>\n${e.message}\n\nHãy kiểm tra lại dấu phẩy, ngoặc kép trong ô JSON Payload.`;
+        return;
+      }
+
+      output.innerHTML = `<span class="wait-text">⏳ Đang gửi yêu cầu đến Server...</span>`;
+
+      // Gửi POST
+      fetch(url, {
+        method: 'POST',
+        redirect: 'follow', // Bắt buộc đối với Google Apps Script
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8' // Vượt CORS của Google
+        },
+        body: JSON.stringify(payload)
+      })
+      .then(response => response.json())
+      .then(data => {
+        // In kết quả JSON trả về ra màn hình đen, format đẹp (thụt lề 2 space)
+        output.innerHTML = JSON.stringify(data, null, 2);
+      })
+      .catch(error => {
+        output.innerHTML = `<span class="error-text">❌ LỖI MẠNG HOẶC LỖI CORS:</span>\n${error.message}`;
+      });
+    }
+  </script>
+</body>
+</html>
