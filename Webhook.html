@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webhook Studio X - Next-Gen Interface</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #090d16;
+            --bg-card: #111827;
+            --bg-input: #1f293d;
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --border-focus: #6366f1;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --accent-glow: rgba(99, 102, 241, 0.25);
+            --success: #10b981;
+            --error: #f43f5e;
+            --warning: #f59e0b;
+        }
+
+        * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        body { 
+            margin: 0; padding: 0; display: flex; height: 100vh; 
+            background-color: var(--bg-base); color: var(--text-main);
+            overflow: hidden;
+        }
+        
+        /* Hiệu ứng nền mờ ảo */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, transparent 70%);
+            top: -100px; left: -100px;
+            z-index: 0; pointer-events: none;
+        }
+
+        .container { display: flex; width: 100%; height: 100%; position: relative; z-index: 1; }
+        
+        .pane { 
+            flex: 1; padding: 40px; overflow-y: auto; 
+            display: flex; flex-direction: column; gap: 24px; 
+        }
+        
+        .left-pane { 
+            border-right: 1px solid var(--border-glass); 
+            background: linear-gradient(135deg, rgba(17, 24, 39, 0.7) 0%, rgba(9, 13, 22, 0.7) 100%);
+            backdrop-filter: blur(20px);
+        }
+        
+        .right-pane { 
+            background: rgba(13, 19, 32, 0.5); 
+        }
+        
+        .pane-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        h2 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+        
+        .badge {
+            font-size: 11px; padding: 4px 10px; border-radius: 6px; 
+            font-weight: 600; background: rgba(99, 102, 241, 0.15); color: #818cf8;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .control-group { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+        .control-group.fixed { flex: 0; }
+        
+        label { font-weight: 600; font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+        
+        .input-wrapper { position: relative; display: flex; align-items: center; }
+        
+        input, textarea { 
+            width: 100%; padding: 14px 16px; background-color: var(--bg-input);
+            border: 1px solid var(--border-glass); border-radius: 12px; 
+            color: var(--text-main); font-size: 14px; outline: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        input:focus, textarea:focus { 
+            border-color: var(--border-focus); 
+            background-color: #1a2336;
+            box-shadow: 0 0 0 4px var(--accent-glow); 
+        }
+        
+        textarea { resize: none; flex: 1; line-height: 1.6; min-height: 220px; }
+        
+        .action-btn { 
+            padding: 16px; background: linear-gradient(135deg, var(--primary) 0%, #4338ca 100%); 
+            color: #fff; border: none; border-radius: 12px; cursor: pointer; 
+            font-size: 15px; font-weight: 700; width: 100%; transition: all 0.3s;
+            box-shadow: 0 10px 25px -5px var(--accent-glow);
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 15px 30px -5px rgba(99, 102, 241, 0.4); }
+        .action-btn:active { transform: translateY(0); }
+        .action-btn:disabled { 
+            background: #1f293d; color: var(--text-muted); 
+            cursor: not-allowed; box-shadow: none; transform: none; 
+        }
+        
+        .output-card {
+            position: relative;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 18px;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--border-glass);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        pre { 
+            background-color: transparent; padding: 18px; 
+            white-space: pre-wrap; word-wrap: break-word; color: #a5b4fc; 
+            font-family: 'JetBrains Mono', monospace; 
+            margin: 0; flex: 1; overflow-y: auto; font-size: 13px; line-height: 1.6;
+        }
+        
+        .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+        .status-dot.green { background-color: var(--success); box-shadow: 0 0 8px var(--success); }
+        .status-dot.red { background-color: var(--error); box-shadow: 0 0 8px var(--error); }
+        .status-dot.yellow { background-color: var(--warning); box-shadow: 0 0 8px var(--warning); }
+        .status-dot.gray { background-color: var(--text-muted); }
+
+        #jsonPreview { color: #fde047; } 
+        #responseBox { color: #34d399; }
+        #errorBox { color: #fb7185; display: none; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- MÀN 1: CẤU HÌNH & NHẬP LIỆU -->
+        <div class="pane left-pane">
+            <div class="pane-header">
+                <div class="title-group">
+                    <h2>Cấu hình Webhook</h2>
+                </div>
+                <span class="badge">Input Payload</span>
+            </div>
+            
+            <div class="control-group fixed">
+                <label for="webhookUrl">Webhook URL Đích</label>
+                <div class="input-wrapper">
+                    <input type="text" id="webhookUrl" placeholder="https://api.yourdomain.com/webhook..." value="">
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label for="rawJson">Dữ liệu JSON (Tự do nhập / Dán)</label>
+                <textarea id="rawJson" placeholder="{&#10;  &quot;event_type&quot;: &quot;user_signup&quot;,&#10;  &quot;timestamp&quot;: &quot;2026-03-30&quot;,&#10;  &quot;data&quot;: {&#10;    &quot;username&quot;: &quot;alex_dev&quot;,&#10;    &quot;status&quot;: &quot;active&quot;&#10;  }&#10;}"></textarea>
+            </div>
+            
+            <button id="sendBtn" class="action-btn">
+                <span>🚀 Bắn Webhook Ngay</span>
+            </button>
+        </div>
+
+        <!-- MÀN 2: XEM TRƯỚC & KẾT QUẢ -->
+        <div class="pane right-pane">
+            <div class="pane-header">
+                <div class="title-group">
+                    <h2>Kiểm thử & Thời gian thực</h2>
+                </div>
+                <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: var(--success); border-color: rgba(16, 185, 129, 0.3);">Live Output</span>
+            </div>
+            
+            <!-- Card Xem trước JSON -->
+            <div class="output-card">
+                <div class="card-header">
+                    <span>Cấu trúc JSON Schema</span>
+                    <div>
+                        <span class="status-dot gray" id="jsonDot"></span>
+                        <span id="jsonStatusText">Chưa có dữ liệu</span>
+                    </div>
+                </div>
+                <pre id="jsonPreview">Chưa có nội dung JSON đầu vào...</pre>
+            </div>
+            
+            <!-- Card Phản hồi Server -->
+            <div class="output-card">
+                <div class="card-header">
+                    <span>Phản hồi từ Server đích (Response)</span>
+                    <div>
+                        <span class="status-dot gray" id="resDot"></span>
+                        <span id="resStatusText">Đang chờ tín hiệu</span>
+                    </div>
+                </div>
+                <pre id="responseBox">Nhấn nút "Bắn Webhook Ngay" để kích hoạt request...</pre>
+                <pre id="errorBox"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const rawJsonInput = document.getElementById('rawJson');
+        const jsonPreview = document.getElementById('jsonPreview');
+        const sendBtn = document.getElementById('sendBtn');
+        const webhookUrlInput = document.getElementById('webhookUrl');
+        const responseBox = document.getElementById('responseBox');
+        const errorBox = document.getElementById('errorBox');
+        
+        const jsonDot = document.getElementById('jsonDot');
+        const jsonStatusText = document.getElementById('jsonStatusText');
+        const resDot = document.getElementById('resDot');
+        const resStatusText = document.getElementById('resStatusText');
+        
+        let validPayload = null;
+
+        function updateJsonStatus(status, text, colorClass) {
+            jsonStatusText.textContent = text;
+            jsonDot.className = "status-dot " + colorClass;
+        }
+
+        function updateResStatus(text, colorClass) {
+            resStatusText.textContent = text;
+            resDot.className = "status-dot " + colorClass;
+        }
+
+        function validateJson() {
+            const rawText = rawJsonInput.value.trim();
+            
+            if (!rawText) {
+                jsonPreview.textContent = "Chưa có nội dung JSON đầu vào...";
+                jsonPreview.style.color = "var(--text-muted)";
+                updateJsonStatus("Trống", "gray");
+                validPayload = {}; 
+                sendBtn.disabled = false;
+                return;
+            }
+
+            try {
+                validPayload = JSON.parse(rawText);
+                jsonPreview.textContent = JSON.stringify(validPayload, null, 4);
+                jsonPreview.style.color = "#fde047"; 
+                updateJsonStatus("Hợp lệ (Valid)", "green");
+                sendBtn.disabled = false;
+            } catch (error) {
+                jsonPreview.textContent = "❌ Lỗi cú pháp JSON:\n" + error.message;
+                jsonPreview.style.color = "var(--error)";
+                updateJsonStatus("Sai cú pháp", "red");
+                validPayload = null;
+                sendBtn.disabled = true;
+            }
+        }
+
+        rawJsonInput.addEventListener('input', validateJson);
+
+        sendBtn.addEventListener('click', async () => {
+            const webhookUrl = webhookUrlInput.value.trim();
+
+            errorBox.style.display = 'none';
+            responseBox.style.display = 'block';
+            responseBox.style.color = "#34d399";
+            
+            if (!webhookUrl) {
+                responseBox.style.display = 'none';
+                errorBox.style.display = 'block';
+                errorBox.textContent = '⚠️ Cảnh báo: Vui lòng nhập URL đích trước khi gửi!';
+                updateResStatus("Thiếu URL", "red");
+                return;
+            }
+
+            sendBtn.innerHTML = `<span>⏳ Đang truyền tải...</span>`;
+            sendBtn.disabled = true;
+            updateResStatus("Đang gửi request...", "yellow");
+
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(validPayload)
+                });
+
+                const responseData = await response.text();
+                
+                if (response.ok) {
+                    responseBox.style.color = "#34d399";
+                    responseBox.textContent = `✅ Thành công (HTTP Status: ${response.status})\n\n${responseData}`;
+                    updateResStatus(`Thành công (${response.status})`, "green");
+                } else {
+                    responseBox.style.display = 'none';
+                    errorBox.style.display = 'block';
+                    errorBox.textContent = `⚠️ Lỗi Server (HTTP Status: ${response.status})\n\n${responseData}`;
+                    updateResStatus(`Lỗi HTTP ${response.status}`, "red");
+                }
+
+            } catch (error) {
+                responseBox.style.display = 'none';
+                errorBox.style.display = 'block';
+                errorBox.textContent = `❌ Lỗi kết nối hoặc CORS Policy:\n${error.message}\n\n(Mẹo: Đảm bảo server đích chấp nhận yêu cầu từ trình duyệt qua CORS).`;
+                updateResStatus("Lỗi kết nối", "red");
+            } finally {
+                sendBtn.innerHTML = `<span>🚀 Bắn Webhook Ngay</span>`;
+                sendBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
