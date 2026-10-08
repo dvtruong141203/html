@@ -17,7 +17,7 @@
     .section-card { display: flex; flex-direction: column; gap: 18px; }
     .camera-container { position: relative; width: 100%; aspect-ratio: 1; background: #000; border-radius: 28px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 2px solid #1e293b; -webkit-mask-image: -webkit-radial-gradient(white, black);}
     
-    /* ĐÃ THÊM BỘ LỌC ĐEN TRẮNG (GRAYSCALE) CHO CAMERA */
+    /* BỘ LỌC ĐEN TRẮNG */
     #video { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%) contrast(1.05); -webkit-filter: grayscale(100%) contrast(1.05); transition: 0.3s; }
     #video.front-camera { transform: scaleX(-1); -webkit-transform: scaleX(-1);}
     
@@ -96,7 +96,7 @@
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx3nnZ45NKjve47jyhHHYYUTYxYExbxcoBGbn5SzfBHKBQtvtQ8HQSoyLopq7S4fJb9/exec"; 
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz9AogT2iGi71U93g4Ns3rsXogSWBnkNGJU91BQjX0cJo-jLgi7QCUJS6qe9rusloAz/exec"; 
     
     let currentStream = null, currentFacingMode = "user", existingFaceMatcher = null;
     let isDataReady = false, isCameraReady = false, isModelsLoaded = false;
@@ -168,20 +168,19 @@
       } catch(e) { statusBox.innerText = "Lỗi tải AI!"; }
     }
 
-    // Cập nhật hàm lấy dữ liệu từ định dạng JSON mới
     async function fetchDatabaseAsync() {
       try {
         const response = await fetch(SCRIPT_URL);
         const result = await response.json();
         
-        if (result && result.length > 0) {
+        if (result.status === "success" && result.data && result.data.length > 0) {
           const labeledDescriptors = [];
-          for (let i = 0; i < result.length; i++) {
-             // Đọc dữ liệu dựa trên key của định dạng JSON mới
-            const empId = String(result[i]["ID"]);
-            const empTime = result[i]["Thời gian"];
-            const rawFaceData = result[i]["Khuôn mặt"];
-            const empImage = result[i]["URL"];
+          for (let i = 0; i < result.data.length; i++) {
+            const item = result.data[i];
+            const empId = String(item["ID"]);
+            const empTime = item["Thời gian"];
+            const rawFaceData = item["Khuôn mặt"];
+            const empImage = item["URL"];
             
             if (!empId || !rawFaceData) continue;
             employeeData[empId] = { id: empId, time: empTime, image: empImage };
@@ -192,9 +191,7 @@
           }
           if (labeledDescriptors.length > 0) existingFaceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.40);
         }
-      } catch(e) {
-          console.error("Lỗi khi tải dữ liệu", e)
-      }
+      } catch(e) {}
       
       isDataReady = true; checkAndStartApp();
     }
