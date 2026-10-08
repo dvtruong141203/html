@@ -168,15 +168,21 @@
       } catch(e) { statusBox.innerText = "Lỗi tải AI!"; }
     }
 
+    // Cập nhật hàm lấy dữ liệu từ định dạng JSON mới
     async function fetchDatabaseAsync() {
       try {
         const response = await fetch(SCRIPT_URL);
         const result = await response.json();
         
-        if (result.status === "success" && result.data.length > 0) {
+        if (result && result.length > 0) {
           const labeledDescriptors = [];
-          for (let i = 0; i < result.data.length; i++) {
-            const empId = String(result.data[i][0]), empTime = result.data[i][1], rawFaceData = result.data[i][2], empImage = result.data[i][3];
+          for (let i = 0; i < result.length; i++) {
+             // Đọc dữ liệu dựa trên key của định dạng JSON mới
+            const empId = String(result[i]["ID"]);
+            const empTime = result[i]["Thời gian"];
+            const rawFaceData = result[i]["Khuôn mặt"];
+            const empImage = result[i]["URL"];
+            
             if (!empId || !rawFaceData) continue;
             employeeData[empId] = { id: empId, time: empTime, image: empImage };
             try {
@@ -186,7 +192,9 @@
           }
           if (labeledDescriptors.length > 0) existingFaceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.40);
         }
-      } catch(e) {}
+      } catch(e) {
+          console.error("Lỗi khi tải dữ liệu", e)
+      }
       
       isDataReady = true; checkAndStartApp();
     }
