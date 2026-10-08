@@ -120,7 +120,6 @@
       if (video) video.srcObject = null;
     }
 
-    // NGỪNG SỬ DỤNG CAMERA KHI THOÁT
     document.addEventListener("visibilitychange", () => {
       if (document.getElementById('app-card').style.display === 'flex') {
         if (document.hidden) {
@@ -173,10 +172,13 @@
         const response = await fetch(SCRIPT_URL);
         const result = await response.json();
         
-        if (result.status === "success" && result.data && result.data.length > 0) {
+        // ĐỌC TRỰC TIẾP JSON DẠNG MẢNG HOẶC OBJECT BÊN TRONG THEO CẤU TRÚC MỚI
+        let dataArray = Array.isArray(result) ? result : (result.data || []);
+
+        if (dataArray.length > 0) {
           const labeledDescriptors = [];
-          for (let i = 0; i < result.data.length; i++) {
-            const item = result.data[i];
+          for (let i = 0; i < dataArray.length; i++) {
+            const item = dataArray[i];
             const empId = String(item["ID"]);
             const empTime = item["Thời gian"];
             const rawFaceData = item["Khuôn mặt"];
