@@ -3,130 +3,114 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Face ID - Tra Cứu Thông Tin</title>
+  <title>Face ID - Check In</title>
   <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-    body, html { width: 100%; height: 100%; background: radial-gradient(circle at 50% 20%, #0f172a 0%, #020617 100%); display: flex; justify-content: center; align-items: center; padding: 16px; color: #f8fafc; overflow: hidden; }
+    body, html { width: 100%; height: 100%; background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); display: flex; justify-content: center; align-items: center; padding: 15px; overflow: hidden; }
     
-    .app-card { display: flex; background: rgba(30, 41, 59, 0.65); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); padding: 28px; border-radius: 36px; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.05); width: 100%; max-width: 420px; flex-direction: column; gap: 22px; animation: fadeIn 0.4s ease-out;}
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .app-card { display: flex; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 16px; border-radius: 32px; box-shadow: 0 24px 48px rgba(0, 0, 0, 0.1); width: 100%; max-width: 480px; flex-direction: column; gap: 16px; animation: fadeIn 0.5s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     
-    .app-header h2 { font-size: 1.4rem; font-weight: 800; color: #38bdf8; text-align: center; text-transform: uppercase; letter-spacing: 1px;}
-    .section-card { display: flex; flex-direction: column; gap: 18px; }
-    .camera-container { position: relative; width: 100%; aspect-ratio: 1; background: #000; border-radius: 28px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 2px solid #1e293b; -webkit-mask-image: -webkit-radial-gradient(white, black); transform: translateZ(0); }
-    #video { width: 100%; height: 100%; object-fit: cover; filter: contrast(1.05); -webkit-filter: contrast(1.05); will-change: transform; transform: translateZ(0); }
-    #video.front-camera { transform: scaleX(-1) translateZ(0); -webkit-transform: scaleX(-1) translateZ(0); }
-    
-    .face-guide-circle { position: absolute; width: 280px; height: 280px; border: 2px dashed rgba(56, 189, 248, 0.4); border-radius: 50%; pointer-events: none; z-index: 5; transition: 0.3s; -webkit-transition: 0.3s;}
-    .face-guide-circle.active { border-color: #38bdf8; border-style: solid; border-width: 3px; box-shadow: 0 0 35px rgba(56, 189, 248, 0.5); transform: scale(1.05); -webkit-transform: scale(1.05);}
+    .camera-container { position: relative; width: 100%; aspect-ratio: 3 / 4; background: #0F172A; border-radius: 24px; overflow: hidden; -webkit-mask-image: -webkit-radial-gradient(white, black); transform: translateZ(0); }
+    #video { width: 100%; height: 100%; object-fit: cover; display: block; will-change: transform; transform: translateZ(0); }
+    #video.front-camera, canvas.front-camera { transform: scaleX(-1) translateZ(0); -webkit-transform: scaleX(-1) translateZ(0); }
+    canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; will-change: transform; }
     
     .icon-btn { position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; background: transparent; color: #FFFFFF; border: none; outline: none; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 30; transition: transform 0.3s ease; -webkit-transition: -webkit-transform 0.3s ease;}
     .icon-btn:hover { transform: scale(1.15) rotate(180deg); -webkit-transform: scale(1.15) rotate(180deg); }
     .icon-btn svg { width: 18px; height: 18px; stroke: currentColor; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8)); -webkit-filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8));}
     
-    .progress-container { width: 100%; background: rgba(255, 255, 255, 0.08); height: 6px; border-radius: 4px; overflow: hidden; margin-bottom: -10px;}
-    .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #0284c7, #38bdf8); transition: 0.05s; }
-    .status-box { font-size: 0.85rem; font-weight: 600; color: #94a3b8; text-align: center; min-height: 24px; padding: 0 10px; line-height: 1.4; }
+    .info-box { background: #F8FAFC; border: 2px solid #E2E8F0; border-radius: 20px; padding: 16px; display: flex; align-items: center; gap: 16px; min-height: 90px; transition: opacity 0.3s ease, visibility 0.3s ease; opacity: 1; visibility: visible; }
+    .info-box.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+    .info-box.success { background: #ECFDF5; border-color: #A7F3D0; }
+    .info-box.success .info-visual { background: #10B981; border: 2px solid #34D399; }
     
-    .btn { width: 100%; padding: 16px; border: none; border-radius: 20px; font-weight: 700; font-size: 1.05rem; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .btn-primary { background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%); color: white; box-shadow: 0 10px 25px rgba(56, 189, 248, 0.3); }
-    
-    #section-profile { display: none; text-align: center; }
-    .profile-avatar { width: 140px; height: 140px; margin: 0 auto 16px; border-radius: 50%; padding: 4px; background: linear-gradient(135deg, #0284c7, #38bdf8); box-shadow: 0 0 40px rgba(56, 189, 248, 0.4); }
-    .profile-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 4px solid #0f172a; }
-    .profile-title { color: #38bdf8; font-weight: 800; font-size: 1.3rem; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px;}
-    .info-group { background: rgba(2, 6, 23, 0.6); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 14px 18px; display: flex; flex-direction: column; gap: 6px; text-align: left; margin-bottom: 12px;}
-    .info-group label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; }
-    .info-group .value { font-size: 1.2rem; color: #ffffff; font-weight: 700; }
-    .info-group .value.highlight { color: #38bdf8; font-size: 1.4rem; letter-spacing: 1px; }
-    .copy-btn { background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; padding: 6px 12px; border-radius: 10px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
-    .flex-row { display: flex; justify-content: space-between; align-items: center; }
+    .info-visual { width: 60px; height: 60px; flex-shrink: 0; background: #94A3B8; border-radius: 16px; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; color: white; }
+    .info-avatar { width: 100%; height: 100%; object-fit: cover; z-index: 3; position: absolute; top: 0; left: 0; }
+    .info-content { display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
+    .info-subtitle { font-size: 0.8rem; text-transform: uppercase; color: #64748B; font-weight: 800; }
+    .info-title { font-size: 1.05rem; font-weight: 800; color: #0F172A; white-space: normal; line-height: 1.3;}
   </style>
 </head>
 <body>
-
   <div class="app-card" id="app-card">
-    <div class="app-header"><h2>Tra Cứu Dữ Liệu</h2></div>
-    
-    <div id="section-scan" class="section-card">
-      <div class="camera-container" id="container">
-        <button class="icon-btn" onclick="switchCamera()" title="Đổi camera">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 9a9 9 0 0 0-14.77-5.08L1 9"></path><polyline points="1 4 1 9 6 9"></polyline>
-            <path d="M3 15a9 9 0 0 0 14.77 5.08L23 15"></path><polyline points="23 20 23 15 18 15"></polyline>
-          </svg>
-        </button>
-        <div id="guide-circle" class="face-guide-circle"></div>
-        <video id="video" autoplay muted playsinline></video>
-      </div>
-
-      <div class="progress-container"><div id="progress-bar" class="progress-bar"></div></div>
-      <div id="status-box" class="status-box"></div>
+    <div class="camera-container" id="container">
+      <button id="btn-switch" class="icon-btn" onclick="switchCamera()" title="Đổi camera" style="display: none;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 9a9 9 0 0 0-14.77-5.08L1 9"></path><polyline points="1 4 1 9 6 9"></polyline>
+          <path d="M3 15a9 9 0 0 0 14.77 5.08L23 15"></path><polyline points="23 20 23 15 18 15"></polyline>
+        </svg>
+      </button>
+      <video id="video" autoplay muted playsinline></video>
     </div>
 
-    <div id="section-profile" class="section-card">
-      <div class="profile-title">Hồ Sơ Nhân Sự</div>
-      <div class="profile-avatar"><img id="profile-img" src="" alt="Avatar"></div>
-      
-      <div class="info-group">
-        <label>Mã Định Danh (ID)</label>
-        <div class="flex-row">
-          <div id="profile-id" class="value highlight">---</div>
-          <button class="copy-btn" onclick="copyID('profile-id', this)">Copy</button>
-        </div>
+    <div id="info-box" class="info-box hide">
+      <div id="info-visual" class="info-visual"></div>
+      <div class="info-content">
+        <span id="info-subtitle" class="info-subtitle"></span>
+        <span id="info-title" class="info-title"></span>
       </div>
-      
-      <div class="info-group">
-        <label>Đăng Ký Lần Đầu</label>
-        <div id="profile-time" class="value">---</div>
-      </div>
-
-      <button class="btn btn-primary" style="margin-top: 10px;" onclick="resumeScanning()">🔍 Tiếp tục tra cứu</button>
     </div>
   </div>
 
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx3nnZ45NKjve47jyhHHYYUTYxYExbxcoBGbn5SzfBHKBQtvtQ8HQSoyLopq7S4fJb9/exec"; 
     
-    let currentStream = null, currentFacingMode = "user", existingFaceMatcher = null;
-    let isDataReady = false, isModelsLoaded = false;
-    let isScanningActive = false, scanTimer = 0;
-    let employeeData = {}; 
+    let faceMatcher = null, canvas = null, displaySize = null, currentFacingMode = "user", currentStream = null, isRunning = false, employeeData = {}, lastScanLabel = ""; 
+    let isModelsLoaded = false, isDataReady = false; 
 
-    const video = document.getElementById('video');
-    const statusBox = document.getElementById('status-box'), progressBar = document.getElementById('progress-bar'), guideCircle = document.getElementById('guide-circle');
-    
+    const video = document.getElementById('video'), container = document.getElementById('container'), btnSwitch = document.getElementById('btn-switch');
+    const infoBox = document.getElementById('info-box'), infoTitle = document.getElementById('info-title'), infoSubtitle = document.getElementById('info-subtitle'), infoVisual = document.getElementById('info-visual');
+
     function getDirectImageUrl(url) {
       if (!url) return '';
       const match = url.match(/[-\w]{25,}/);
-      return match ? `https://drive.google.com/thumbnail?id=${match[0]}&sz=w400-h400-c` : url;
+      return match ? `https://drive.google.com/thumbnail?id=${match[0]}&sz=w200-h200-c` : url;
+    }
+
+    function updateStatusUI(state, title, subtitle, avatarUrl = null) {
+      if (state === 'hide') { infoBox.className = 'info-box hide'; return; }
+      infoTitle.innerText = title; 
+      infoSubtitle.innerText = subtitle;
+      infoBox.className = `info-box ${state}`;
+      if (avatarUrl) { 
+        infoVisual.innerHTML = `<img class="info-avatar" src="${getDirectImageUrl(avatarUrl)}">`;
+      }
     }
 
     function stopCamera() {
+      isRunning = false;
       if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); currentStream = null; }
       if (video) video.srcObject = null;
     }
 
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden) { stopCamera(); isScanningActive = false; } 
-      else { if (document.getElementById('section-scan').style.display !== 'none' && isDataReady) startCamera(currentFacingMode); }
+      if (document.hidden) { stopCamera(); } else { if (isDataReady && !isRunning) startCamera(currentFacingMode); }
     });
     window.addEventListener("pagehide", stopCamera);
     window.addEventListener("beforeunload", stopCamera);
 
-    window.onload = () => {
+    window.onload = () => { 
       const ua = navigator.userAgent || navigator.vendor || window.opera;
       const inApp = (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Zalo") > -1) || (ua.indexOf("Instagram") > -1) || (ua.indexOf("TikTok") > -1);
-      if (inApp) return;
-      initSystem(); 
-    };
+      
+      if (inApp) {
+        const url = window.location.href;
+        const noProtocolUrl = url.replace(/^https?:\/\//, '');
+        if (/android/i.test(ua)) { window.location.href = `intent://${noProtocolUrl}#Intent;scheme=https;package=com.android.chrome;end`; } 
+        else if (/iphone|ipad|ipod/i.test(ua)) { window.location.href = `googlechrome://${noProtocolUrl}`; }
+        return; 
+      }
+      initSystem();
+    }
 
     async function initSystem() {
-      startCamera(currentFacingMode);
-      await loadModels();
+      startCamera(currentFacingMode); 
+      await loadModels();                   
       await fetchDatabaseAsync(); 
+      setInterval(fetchDatabaseAsync, 300000); 
     }
 
     async function loadModels() {
@@ -136,23 +120,23 @@
         await faceapi.nets.faceLandmark68Net.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
         await faceapi.nets.faceRecognitionNet.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
         isModelsLoaded = true; checkAndStartApp();
-      } catch(e) {}
+      } catch (e) {}
     }
 
     function buildFaceMatcher(data) {
-      employeeData = {}; 
-      const labeledDescriptors = [];
+      const labeledFaceDescriptors = [];
+      employeeData = {};
       for (let i = 0; i < data.length; i++) {
-        const empId = String(data[i][0]), empTime = data[i][1], rawFaceData = data[i][2], empImage = data[i][3];
+        const empId = data[i][0], rawFaceData = data[i][2], empImage = data[i][3]; 
         if (!empId || !rawFaceData) continue;
-        employeeData[empId] = { id: empId, time: empTime, image: empImage };
+        employeeData[empId] = { name: "ID: " + empId, image: empImage };
         try {
-          const parsed = typeof rawFaceData === 'string' ? JSON.parse(rawFaceData) : rawFaceData;
-          if (Array.isArray(parsed)) labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(empId, [new Float32Array(parsed)]));
-        } catch(e) {}
+          const parsedArray = typeof rawFaceData === 'string' ? JSON.parse(rawFaceData) : rawFaceData;
+          if (Array.isArray(parsedArray)) labeledFaceDescriptors.push(new faceapi.LabeledFaceDescriptors(String(empId), [new Float32Array(parsedArray)]));
+        } catch (err) {}
       }
-      if (labeledDescriptors.length > 0) {
-        existingFaceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.55);
+      if (labeledFaceDescriptors.length > 0) {
+        faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.55);
         isDataReady = true; checkAndStartApp();
       }
     }
@@ -170,106 +154,79 @@
           localStorage.setItem('FaceID_WebCache', JSON.stringify(result.data));
           buildFaceMatcher(result.data);
         }
-      } catch(e) {}
+      } catch (error) {}
     }
 
     async function startCamera(facingMode) {
       stopCamera();
       try {
+        // GIỚI HẠN ĐỘ PHÂN GIẢI 720P ĐỂ CAMERA CHẠY MƯỢT KHÔNG GIẬT LAG
         currentStream = await navigator.mediaDevices.getUserMedia({ 
           video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: facingMode } 
         });
         video.srcObject = currentStream;
         video.className = facingMode === "user" ? "front-camera" : "back-camera";
-        video.onloadedmetadata = () => { video.play(); checkAndStartApp(); };
-      } catch(err) {}
-    }
-
-    function checkAndStartApp() {
-      if (isModelsLoaded && isDataReady && video.readyState >= 2 && !isScanningActive) {
-        scanTimer = 0; isScanningActive = true;
-        statusBox.innerText = "Đưa khuôn mặt vào camera để tra cứu";
-        statusBox.style.color = "#38bdf8";
-        runLookupLoop();
-      }
+        if (canvas) canvas.className = video.className;
+        video.onloadedmetadata = () => {
+          video.play();
+          if (!canvas) { canvas = faceapi.createCanvasFromMedia(video); container.append(canvas); }
+          displaySize = { width: video.videoWidth, height: video.videoHeight };
+          faceapi.matchDimensions(canvas, displaySize);
+          checkAndStartApp();
+        };
+      } catch (err) {}
     }
 
     function switchCamera() {
+      btnSwitch.style.display = 'none';
       currentFacingMode = (currentFacingMode === "user") ? "environment" : "user";
       startCamera(currentFacingMode);
     }
 
-    async function runLookupLoop() {
+    function checkAndStartApp() {
+      if (isModelsLoaded && isDataReady && video.readyState >= 2 && !isRunning) {
+        updateStatusUI('hide'); 
+        btnSwitch.style.display = 'flex';
+        if (faceMatcher) startSmoothRecognition();
+      }
+    }
+
+    async function startSmoothRecognition() {
+      isRunning = true; updateStatusUI('hide');
       const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.3 });
-      const targetTimeMs = 100; 
+      const ctx = canvas.getContext('2d');
       let lastFrameTime = 0;
-      const fpsInterval = 100; // GIÃN CÁCH NHỊP AI ĐỂ CAMERA KHÔNG BỊ KHỰNG
+      const fpsInterval = 100; // GIÃN CÁCH NHỊP QUÉT ĐỂ CHỐNG GIẬT LAG CHO CPU
 
       const detectFrame = async (timestamp) => {
-        if (!isScanningActive || video.paused || video.ended || !existingFaceMatcher) {
-            if(isScanningActive) requestAnimationFrame(detectFrame);
-            return;
-        }
+        if (!isRunning || video.paused || !faceMatcher) return;
         
         if (timestamp - lastFrameTime >= fpsInterval) {
           lastFrameTime = timestamp;
           try {
             const detection = await faceapi.detectSingleFace(video, options).withFaceLandmarks().withFaceDescriptor();
-            if (detection) {
-              const box = detection.detection.box, vCenter = { x: video.videoWidth / 2, y: video.videoHeight / 2 }, fCenter = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
-              
-              if (Math.abs(fCenter.x - vCenter.x) < 250 && Math.abs(fCenter.y - vCenter.y) < 250) {
-                const matchResult = existingFaceMatcher.findBestMatch(detection.descriptor);
-                if (matchResult.label !== "unknown") {
-                  scanTimer += fpsInterval;
-                  progressBar.style.width = `${Math.min(100, (scanTimer / targetTimeMs) * 100)}%`; guideCircle.classList.add('active');
-                  statusBox.innerText = `Đang trích xuất hồ sơ...`;
-                  if (scanTimer >= targetTimeMs) { isScanningActive = false; showProfile(matchResult.label); return; }
-                } else { resetCountdown("👤 Khuôn mặt người lạ (Chưa đăng ký)"); }
-              } else { resetCountdown("⚠ Hãy đưa mặt vào giữa khung tròn"); }
-            } else { resetCountdown("🔍 Đang quét tìm khuôn mặt..."); }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (!detection) {
+              if (lastScanLabel !== "scanning") { updateStatusUI('hide'); lastScanLabel = "scanning"; }
+            } else {
+              const resizedDetection = faceapi.resizeResults(detection, displaySize);
+              const bestMatch = faceMatcher.findBestMatch(resizedDetection.descriptor);
+              if (bestMatch.label === "unknown") {
+                if (lastScanLabel !== "scanning") { updateStatusUI('hide'); lastScanLabel = "scanning"; }
+              } else {
+                new faceapi.draw.DrawBox(resizedDetection.detection.box, { boxColor: "#10B981", lineWidth: 3 }).draw(canvas);
+                if (lastScanLabel !== bestMatch.label) {
+                  lastScanLabel = bestMatch.label;
+                  const emp = employeeData[bestMatch.label];
+                  updateStatusUI('success', emp.name, 'NHẬN DIỆN THÀNH CÔNG', emp.image);
+                }
+              }
+            }
           } catch (err) {}
         }
-        if (isScanningActive) requestAnimationFrame(detectFrame);
+        if (isRunning) requestAnimationFrame(detectFrame);
       };
       requestAnimationFrame(detectFrame);
-    }
-
-    function resetCountdown(msg) {
-      if (scanTimer > 0) {
-        scanTimer = 0; progressBar.style.width = '0%'; guideCircle.classList.add('active');
-        statusBox.innerText = msg; statusBox.style.color = "#94a3b8";
-      } else { statusBox.innerText = msg; }
-    }
-
-    function showProfile(id) {
-      stopCamera(); 
-      const emp = employeeData[id];
-      if(!emp) return;
-
-      document.getElementById('section-scan').style.display = 'none';
-      document.getElementById('section-profile').style.display = 'block';
-
-      document.getElementById('profile-id').innerText = emp.id;
-      document.getElementById('profile-time').innerText = emp.time || "Không xác định";
-      document.getElementById('profile-img').src = getDirectImageUrl(emp.image);
-    }
-
-    function resumeScanning() {
-      document.getElementById('section-profile').style.display = 'none';
-      document.getElementById('section-scan').style.display = 'flex';
-      
-      scanTimer = 0; progressBar.style.width = '0%'; guideCircle.classList.add('active');
-      statusBox.innerText = "Đưa khuôn mặt vào camera để tra cứu";
-      startCamera(currentFacingMode); 
-    }
-
-    function copyID(elementId, btn) {
-      const text = document.getElementById(elementId).innerText;
-      navigator.clipboard.writeText(text).then(() => {
-        const orig = btn.innerHTML; btn.innerHTML = "✅";
-        setTimeout(() => btn.innerHTML = orig, 1500);
-      });
     }
   </script>
 </body>
