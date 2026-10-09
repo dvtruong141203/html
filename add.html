@@ -3,109 +3,179 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Face ID - Check In</title>
+  <title>Face ID - Register Fast</title>
   <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-    body, html { width: 100%; height: 100%; background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); display: flex; justify-content: center; align-items: center; padding: 15px; overflow: hidden; }
+    body, html { width: 100%; height: 100%; background: radial-gradient(circle at 50% 20%, #1e1b4b 0%, #0f172a 100%); display: flex; justify-content: center; align-items: center; padding: 16px; color: #f8fafc; overflow: hidden; }
     
-    .app-card { display: flex; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 16px; border-radius: 32px; box-shadow: 0 24px 48px rgba(0, 0, 0, 0.1); width: 100%; max-width: 480px; flex-direction: column; gap: 16px; animation: fadeIn 0.5s ease-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    .app-card { display: flex; background: rgba(30, 41, 59, 0.65); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); padding: 28px; border-radius: 36px; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.08); width: 100%; max-width: 420px; flex-direction: column; gap: 22px; animation: fadeIn 0.4s ease-out;}
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     
-    .camera-container { position: relative; width: 100%; aspect-ratio: 3 / 4; background: #0F172A; border-radius: 24px; overflow: hidden; -webkit-mask-image: -webkit-radial-gradient(white, black); }
-    #video { width: 100%; height: 100%; object-fit: cover; display: block; }
-    #video.front-camera, canvas.front-camera { transform: scaleX(-1); -webkit-transform: scaleX(-1); }
-    canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
+    .app-header h2 { font-size: 1.4rem; font-weight: 800; color: #ffffff; text-align: center; }
+    .app-header p { font-size: 0.85rem; color: #94a3b8; text-align: center; margin-top: 4px; line-height: 1.4; }
+    .section-card { display: flex; flex-direction: column; gap: 18px; }
+    
+    .camera-container { position: relative; width: 100%; aspect-ratio: 1; background: #020617; border-radius: 28px; overflow: hidden; display: flex; align-items: center; justify-content: center; -webkit-mask-image: -webkit-radial-gradient(white, black);}
+    #video { width: 100%; height: 100%; object-fit: cover; filter: contrast(1.05); -webkit-filter: contrast(1.05); transition: 0.3s; }
+    #video.front-camera { transform: scaleX(-1); -webkit-transform: scaleX(-1);}
+    
+    .face-guide-circle { position: absolute; width: 280px; height: 280px; border: 2px dashed rgba(99, 102, 241, 0.6); border-radius: 50%; pointer-events: none; z-index: 5; transition: 0.3s; -webkit-transition: 0.3s;}
+    .face-guide-circle.active { border-color: #10B981; border-style: solid; border-width: 3px; box-shadow: 0 0 35px rgba(16, 185, 129, 0.5); transform: scale(1.02); -webkit-transform: scale(1.02);}
     
     .icon-btn { position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; background: transparent; color: #FFFFFF; border: none; outline: none; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 30; transition: transform 0.3s ease; -webkit-transition: -webkit-transform 0.3s ease;}
     .icon-btn:hover { transform: scale(1.15) rotate(180deg); -webkit-transform: scale(1.15) rotate(180deg); }
     .icon-btn svg { width: 18px; height: 18px; stroke: currentColor; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8)); -webkit-filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8));}
     
-    .info-box { background: #F8FAFC; border: 2px solid #E2E8F0; border-radius: 20px; padding: 16px; display: flex; align-items: center; gap: 16px; min-height: 90px; transition: opacity 0.3s ease, visibility 0.3s ease; opacity: 1; visibility: visible; }
-    .info-box.hide { opacity: 0; visibility: hidden; pointer-events: none; }
-    .info-box.loading { background: #EEF2FF; border-color: #C7D2FE; }
-    .info-box.loading .info-visual { background: #6366F1; }
-    .info-box.loading .info-subtitle { color: #6366F1; }
-    .info-box.error { background: #FFFBEB; border-color: #FCD34D; }
-    .info-box.error .info-visual { background: #F59E0B; }
-    .info-box.success { background: #ECFDF5; border-color: #A7F3D0; }
-    .info-box.success .info-visual { background: #10B981; border: 2px solid #34D399; }
+    .progress-container { width: 100%; background: rgba(255, 255, 255, 0.08); height: 6px; border-radius: 4px; overflow: hidden; margin-top: 5px; }
+    .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #6366F1, #10B981); transition: 0.05s; }
+    .status-box { font-size: 0.9rem; font-weight: 700; color: #94a3b8; text-align: center; min-height: 24px; padding: 0 10px; }
+
+    .btn { width: 100%; padding: 14px 16px; border: none; border-radius: 20px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-primary { background: linear-gradient(135deg, #6366F1 0%, #4f46e5 100%); color: white; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4); }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(99, 102, 241, 0.6); }
+    .btn-secondary { background: rgba(255, 255, 255, 0.05); color: #cbd5e1; border: 1px solid rgba(255, 255, 255, 0.2); }
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.15); color: #ffffff; }
+
+    #section-confirm { display: none; text-align: center; }
+    .preview-container { width: 100%; aspect-ratio: 1; border-radius: 28px; overflow: hidden; border: 3px solid #6366F1; box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2); background: #020617; }
+    .preview-container img { width: 100%; height: 100%; object-fit: cover; }
+    .flex-row { display: flex; gap: 12px; margin-top: 10px; width: 100%; }
+    .flex-row .btn { flex: 1; }
+
+    #section-success, #section-duplicate { text-align: center; display: none; }
+    .success-avatar, .duplicate-avatar { width: 120px; height: 120px; margin: 0 auto 10px; border-radius: 50%; padding: 4px; box-shadow: 0 0 30px rgba(0, 0, 0, 0.4); }
+    .success-avatar { background: linear-gradient(135deg, #10B981, #34D399); }
+    .duplicate-avatar { background: linear-gradient(135deg, #F59E0B, #FBBF24); }
+    .success-avatar img, .duplicate-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #1e293b; }
     
-    .info-visual { width: 60px; height: 60px; flex-shrink: 0; background: #94A3B8; border-radius: 16px; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; color: white; }
-    .info-avatar { width: 100%; height: 100%; object-fit: cover; z-index: 3; position: absolute; top: 0; left: 0; }
-    .info-content { display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
-    .info-subtitle { font-size: 0.8rem; text-transform: uppercase; color: #64748B; font-weight: 800; }
-    .info-title { font-size: 1.05rem; font-weight: 800; color: #0F172A; white-space: normal; line-height: 1.3;}
+    .info-group { background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; text-align: left; margin-bottom: 10px;}
+    .info-group label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+    .info-group .value { font-size: 1.1rem; color: #ffffff; font-weight: 700; }
+    .info-group .value.highlight { color: #34D399; font-size: 1.3rem; letter-spacing: 1px; }
+    .info-group .value.warning { color: #FBBF24; font-size: 1.2rem; }
     
-    .mini-spinner { width: 24px; height: 24px; border: 3px solid rgba(255, 255, 255, 0.3); border-top-color: #ffffff; border-radius: 50%; animation: spin 0.8s linear infinite; -webkit-animation: spin 0.8s linear infinite; }
-    @keyframes spin { 100% { transform: rotate(360deg); -webkit-transform: rotate(360deg); } }
+    .sync-status { font-size: 0.75rem; color: #94a3b8; margin-top: 5px; font-weight: 600; }
+    .copy-btn { background: rgba(52, 211, 153, 0.15); border: 1px solid rgba(52, 211, 153, 0.3); color: #34D399; padding: 6px 12px; border-radius: 10px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
+    .copy-btn:hover { background: rgba(52, 211, 153, 0.3); }
+    .copy-btn.copied { background: #10B981; color: white; border-color: #10B981; }
+    .flex-row-between { display: flex; justify-content: space-between; align-items: center; }
   </style>
 </head>
 <body>
+
   <div class="app-card" id="app-card">
-    <div class="camera-container" id="container">
-      <button id="btn-switch" class="icon-btn" onclick="switchCamera()" title="Đổi camera" style="display: none;">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 9a9 9 0 0 0-14.77-5.08L1 9"></path><polyline points="1 4 1 9 6 9"></polyline>
-          <path d="M3 15a9 9 0 0 0 14.77 5.08L23 15"></path><polyline points="23 20 23 15 18 15"></polyline>
-        </svg>
-      </button>
-      <video id="video" autoplay muted playsinline></video>
+    <div class="app-header">
+      <h2>Đăng Ký Khuôn Mặt</h2>
+      <p id="header-subtitle">Hệ thống sẽ tự động chụp ảnh</p>
+    </div>
+    
+    <div id="section-scan" class="section-card">
+      <div class="camera-container" id="container">
+        <button class="icon-btn" onclick="switchCamera()" title="Đổi camera">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 9a9 9 0 0 0-14.77-5.08L1 9"></path><polyline points="1 4 1 9 6 9"></polyline>
+            <path d="M3 15a9 9 0 0 0 14.77 5.08L23 15"></path><polyline points="23 20 23 15 18 15"></polyline>
+          </svg>
+        </button>
+        <div id="guide-circle" class="face-guide-circle"></div>
+        <video id="video" autoplay muted playsinline></video>
+      </div>
+
+      <div class="progress-container"><div id="progress-bar" class="progress-bar"></div></div>
+      <div id="status-box" class="status-box"></div>
     </div>
 
-    <div id="info-box" class="info-box hide">
-      <div id="info-visual" class="info-visual"></div>
-      <div class="info-content">
-        <span id="info-subtitle" class="info-subtitle"></span>
-        <span id="info-title" class="info-title"></span>
+    <!-- MÀN HÌNH XÁC NHẬN -->
+    <div id="section-confirm" class="section-card">
+      <div class="preview-container"><img id="preview-img" src="" alt="Ảnh vừa chụp"></div>
+      <h3 style="color: #ffffff; font-weight: 800; font-size: 1.15rem; margin-bottom: -5px;">Ảnh này đã chuẩn chưa?</h3>
+      <p style="color: #94a3b8; font-size: 0.85rem;">Hãy đảm bảo ảnh chụp thẳng và không bị mờ.</p>
+      <div class="flex-row">
+        <button class="btn btn-secondary" onclick="retakePhoto()">🔄 Chụp lại</button>
+        <button id="btn-save" class="btn btn-primary" onclick="confirmAndSave()">✅ Lưu ngay</button>
       </div>
+    </div>
+
+    <!-- MÀN HÌNH BÁO TRÙNG LẶP -->
+    <div id="section-duplicate" class="section-card">
+      <div class="duplicate-avatar"><img id="dup-img" src="" alt="Avatar Cũ"></div>
+      <h3 style="color: #FBBF24; font-weight: 800; font-size: 1.2rem;">Khuôn mặt đã tồn tại!</h3>
+      <div class="info-group">
+        <label>Mã ID Đã Đăng Ký</label>
+        <div class="flex-row-between">
+          <div id="dup-id" class="value warning">---</div>
+          <button class="copy-btn" onclick="copyID('dup-id', this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy
+          </button>
+        </div>
+      </div>
+      <div class="info-group">
+        <label>Thời Gian Đăng Ký Trước Đó</label>
+        <div id="dup-time" class="value">---</div>
+      </div>
+      <button class="btn btn-primary" style="margin-top: 10px;" onclick="resetToScanMode()">🔄 Thử lại người khác</button>
+    </div>
+
+    <!-- MÀN HÌNH THÀNH CÔNG -->
+    <div id="section-success" class="section-card">
+      <div class="success-avatar"><img id="success-img" src="" alt="Avatar"></div>
+      <h3 style="color: #34D399; font-weight: 800; font-size: 1.2rem;">Đăng Ký Thành Công!</h3>
+      <div class="info-group">
+        <label>Mã ID Cấp Mới</label>
+        <div class="flex-row-between">
+          <div id="success-id" class="value highlight">---</div>
+          <button class="copy-btn" onclick="copyID('success-id', this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy
+          </button>
+        </div>
+      </div>
+      <div class="info-group">
+        <label>Thời Gian Đăng Ký</label>
+        <div id="success-time" class="value">---</div>
+      </div>
+      <div id="sync-status" class="sync-status">🔄 Đang đồng bộ với Máy chủ...</div>
+      <button class="btn btn-primary" style="margin-top: 10px;" onclick="resetToScanMode()">Đăng ký người tiếp theo</button>
     </div>
   </div>
 
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx3nnZ45NKjve47jyhHHYYUTYxYExbxcoBGbn5SzfBHKBQtvtQ8HQSoyLopq7S4fJb9/exec"; 
     
-    let faceMatcher = null, canvas = null, displaySize = null, currentFacingMode = "user", currentStream = null, isRunning = false, employeeData = {}, lastScanLabel = ""; 
-    let isModelsLoaded = false, isDataReady = false; 
+    let currentStream = null, currentFacingMode = "user", existingFaceMatcher = null;
+    let isDataReady = false, isModelsLoaded = false;
+    let isScanningActive = false, scanTimer = 0, collectedDescriptors = [];
+    let listExistingIDs = [], employeeDatabase = {}; 
+    let tempDescriptor = [], tempImageBase64 = "";
 
-    const video = document.getElementById('video'), container = document.getElementById('container'), btnSwitch = document.getElementById('btn-switch');
-    const infoBox = document.getElementById('info-box'), infoAvatar = document.getElementById('info-avatar'), infoTitle = document.getElementById('info-title'), infoSubtitle = document.getElementById('info-subtitle'), infoVisual = document.getElementById('info-visual');
-
+    const video = document.getElementById('video');
+    const statusBox = document.getElementById('status-box'), progressBar = document.getElementById('progress-bar'), guideCircle = document.getElementById('guide-circle');
+    
     function getDirectImageUrl(url) {
       if (!url) return '';
       const match = url.match(/[-\w]{25,}/);
-      return match ? `https://drive.google.com/thumbnail?id=${match[0]}&sz=w200-h200-c` : url;
-    }
-
-    function updateStatusUI(state, title, subtitle, avatarUrl = null) {
-      if (state === 'hide') { infoBox.className = 'info-box hide'; return; }
-      infoTitle.innerText = title; 
-      infoSubtitle.innerText = subtitle;
-      infoBox.className = `info-box ${state}`;
-      
-      if (avatarUrl) { 
-        infoVisual.innerHTML = `<img id="info-avatar" class="info-avatar" src="${getDirectImageUrl(avatarUrl)}">`;
-      } else if (state === 'loading') {
-        infoVisual.innerHTML = '<div class="mini-spinner"></div>';
-      } else if (state === 'error') {
-        infoVisual.innerHTML = '⚠️';
-      }
+      return match ? `https://drive.google.com/thumbnail?id=${match[0]}&sz=w400-h400-c` : url;
     }
 
     function stopCamera() {
-      isRunning = false;
       if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); currentStream = null; }
       if (video) video.srcObject = null;
     }
 
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden) { stopCamera(); } else { if (isDataReady && !isRunning) startCamera(currentFacingMode); }
+      if (document.hidden) {
+        stopCamera(); isScanningActive = false;
+      } else {
+        if (document.getElementById('section-scan').style.display !== 'none' && isDataReady) {
+          startCamera(currentFacingMode);
+        }
+      }
     });
     window.addEventListener("pagehide", stopCamera);
     window.addEventListener("beforeunload", stopCamera);
 
-    window.onload = () => { 
+    window.onload = () => {
       const ua = navigator.userAgent || navigator.vendor || window.opera;
       const inApp = (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Zalo") > -1) || (ua.indexOf("Instagram") > -1) || (ua.indexOf("TikTok") > -1);
       
@@ -114,18 +184,19 @@
         const noProtocolUrl = url.replace(/^https?:\/\//, '');
         if (/android/i.test(ua)) { window.location.href = `intent://${noProtocolUrl}#Intent;scheme=https;package=com.android.chrome;end`; } 
         else if (/iphone|ipad|ipod/i.test(ua)) { window.location.href = `googlechrome://${noProtocolUrl}`; }
-        updateStatusUI('error', 'Vui lòng ấn ( ... ) góc phải, chọn "Mở trong Safari / Chrome"', 'TRÌNH DUYỆT BỊ CHẶN CAMERA');
+        statusBox.innerText = "⚠ Ấn dấu ( ... ) góc phải, chọn Mở bằng Safari / Chrome";
+        statusBox.style.color = "#fbbf24";
+        document.getElementById('header-subtitle').innerText = "Trình duyệt bị giới hạn";
         return; 
       }
 
-      initSystem();
-    }
+      initSystem(); 
+    };
 
     async function initSystem() {
-      startCamera(currentFacingMode); 
-      await loadModels();                   
+      startCamera(currentFacingMode);
+      await loadModels();
       await fetchDatabaseAsync(); 
-      setInterval(fetchDatabaseAsync, 300000); 
     }
 
     async function loadModels() {
@@ -134,28 +205,30 @@
         await faceapi.nets.tinyFaceDetector.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
         await faceapi.nets.faceLandmark68Net.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
         await faceapi.nets.faceRecognitionNet.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
-        isModelsLoaded = true; 
-        checkAndStartApp();
-      } catch (e) {}
+        isModelsLoaded = true; checkAndStartApp();
+      } catch(e) {}
     }
 
-    // TĂNG ĐỘ CHÍNH XÁC: Khoảng cách từ 0.38 xuống 0.35
     function buildFaceMatcher(data) {
-      const labeledFaceDescriptors = [];
-      employeeData = {};
+      listExistingIDs = []; 
+      employeeDatabase = {}; 
+      const labeledDescriptors = [];
       for (let i = 0; i < data.length; i++) {
-        const empId = data[i][0], rawFaceData = data[i][2], empImage = data[i][3]; 
+        const empId = String(data[i][0]), empTime = data[i][1], rawFaceData = data[i][2], empImage = data[i][3];
         if (!empId || !rawFaceData) continue;
-        employeeData[empId] = { name: "ID: " + empId, image: empImage };
+        
+        listExistingIDs.push(empId);
+        employeeDatabase[empId] = { id: empId, time: empTime, image: empImage };
+
         try {
-          const parsedArray = typeof rawFaceData === 'string' ? JSON.parse(rawFaceData) : rawFaceData;
-          if (Array.isArray(parsedArray)) labeledFaceDescriptors.push(new faceapi.LabeledFaceDescriptors(String(empId), [new Float32Array(parsedArray)]));
-        } catch (err) {}
+          const parsed = typeof rawFaceData === 'string' ? JSON.parse(rawFaceData) : rawFaceData;
+          if (Array.isArray(parsed)) labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(empId, [new Float32Array(parsed)]));
+        } catch(e) {}
       }
-      if (labeledFaceDescriptors.length > 0) {
-        faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.35); // 0.35 = Rất chính xác
-        isDataReady = true; 
-        checkAndStartApp();
+      if (labeledDescriptors.length > 0) {
+        // NỚI LỎNG THRESHOLD (0.55) CHO VIỆC KIỂM TRA TRÙNG LẶP DỄ HƠN
+        existingFaceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.55);
+        isDataReady = true; checkAndStartApp();
       }
     }
 
@@ -172,72 +245,229 @@
           localStorage.setItem('FaceID_WebCache', JSON.stringify(result.data));
           buildFaceMatcher(result.data);
         }
-      } catch (error) {}
+      } catch(e) {}
     }
 
     async function startCamera(facingMode) {
       stopCamera();
       try {
-        currentStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1080 }, height: { ideal: 1920 }, facingMode: facingMode } });
+        currentStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 720 }, height: { ideal: 720 }, facingMode: facingMode } });
         video.srcObject = currentStream;
         video.className = facingMode === "user" ? "front-camera" : "back-camera";
-        if (canvas) canvas.className = video.className;
-        video.onloadedmetadata = () => {
-          video.play();
-          if (!canvas) { canvas = faceapi.createCanvasFromMedia(video); container.append(canvas); }
-          displaySize = { width: video.videoWidth, height: video.videoHeight };
-          faceapi.matchDimensions(canvas, displaySize);
-          checkAndStartApp();
-        };
-      } catch (err) { updateStatusUI('error', 'Trình duyệt bị từ chối cấp quyền Camera. Hãy tải lại!', 'BỊ TỪ CHỐI CAMERA'); }
-    }
-
-    function switchCamera() {
-      updateStatusUI('loading', 'Đang chuyển camera...', 'HỆ THỐNG');
-      btnSwitch.style.display = 'none';
-      currentFacingMode = (currentFacingMode === "user") ? "environment" : "user";
-      startCamera(currentFacingMode);
-    }
-
-    function checkAndStartApp() {
-      if (isModelsLoaded && isDataReady && video.readyState >= 2 && !isRunning) {
-        updateStatusUI('hide'); 
-        btnSwitch.style.display = 'flex';
-        if (faceMatcher) startSmoothRecognition();
+        video.onloadedmetadata = () => { video.play(); checkAndStartApp(); };
+      } catch(err) {
+        statusBox.innerText = "⚠ Vui lòng cấp quyền Camera!";
+        statusBox.style.color = "#f87171";
       }
     }
 
-    async function startSmoothRecognition() {
-      isRunning = true; updateStatusUI('hide');
-      // TĂNG ĐỘ CHÍNH XÁC QUÉT: inputSize từ 416 lên 512, scoreThreshold từ 0.6 lên 0.7
-      const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 512, scoreThreshold: 0.7 });
-      const ctx = canvas.getContext('2d');
+    function checkAndStartApp() {
+      if (isModelsLoaded && isDataReady && video.readyState >= 2 && !isScanningActive) {
+        scanTimer = 0; collectedDescriptors = []; isScanningActive = true;
+        statusBox.innerText = "Sẵn sàng! Hãy đưa mặt vào vòng tròn";
+        statusBox.style.color = "#94a3b8";
+        runAutoDetectionLoop();
+      }
+    }
+
+    function switchCamera() { 
+      currentFacingMode = (currentFacingMode === "user") ? "environment" : "user"; 
+      startCamera(currentFacingMode); 
+    }
+
+    async function runAutoDetectionLoop() {
+      // TĂNG INPUT SIZE (608), GIẢM SCORE THRESHOLD (0.3)
+      const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 608, scoreThreshold: 0.3 });
+      const targetTimeMs = 200; 
+      const frameIntervalMs = 25; let lastTime = Date.now();
 
       const detectFrame = async () => {
-        if (!isRunning || video.paused || !faceMatcher) return;
-        try {
-          const detection = await faceapi.detectSingleFace(video, options).withFaceLandmarks().withFaceDescriptor();
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          if (!detection) {
-            if (lastScanLabel !== "scanning") { updateStatusUI('hide'); lastScanLabel = "scanning"; }
-          } else {
-            const resizedDetection = faceapi.resizeResults(detection, displaySize);
-            const bestMatch = faceMatcher.findBestMatch(resizedDetection.descriptor);
-            if (bestMatch.label === "unknown") {
-              if (lastScanLabel !== "scanning") { updateStatusUI('hide'); lastScanLabel = "scanning"; }
-            } else {
-              new faceapi.draw.DrawBox(resizedDetection.detection.box, { boxColor: "#10B981", lineWidth: 3 }).draw(canvas);
-              if (lastScanLabel !== bestMatch.label) {
-                lastScanLabel = bestMatch.label;
-                const emp = employeeData[bestMatch.label];
-                updateStatusUI('success', emp.name, 'NHẬN DIỆN THÀNH CÔNG', emp.image);
-              }
-            }
-          }
-        } catch (err) {}
-        if (isRunning) requestAnimationFrame(detectFrame);
+        if (!isScanningActive || video.paused || video.ended) return;
+        const now = Date.now();
+        
+        if (now - lastTime >= frameIntervalMs) {
+          lastTime = now;
+          try {
+            const detection = await faceapi.detectSingleFace(video, options).withFaceLandmarks().withFaceDescriptor();
+            if (detection) {
+              const box = detection.detection.box, vCenter = { x: video.videoWidth / 2, y: video.videoHeight / 2 }, fCenter = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+              
+              // KHUÔN MẶT CÓ THỂ LỆCH TÂM NHIỀU HƠN VẪN ĐƯỢC CHẤP NHẬN (250px)
+              if (Math.abs(fCenter.x - vCenter.x) < 250 && Math.abs(fCenter.y - vCenter.y) < 250) {
+                const landmarks = detection.landmarks;
+                const getCenter = (pts) => {
+                  let sumX = 0, sumY = 0; pts.forEach(pt => { sumX += pt.x; sumY += pt.y; });
+                  return { x: sumX / pts.length, y: sumY / pts.length };
+                };
+                
+                const leCenter = getCenter(landmarks.getLeftEye()), reCenter = getCenter(landmarks.getRightEye()), noseTip = landmarks.getNose()[3], chin = landmarks.getJawOutline()[8];
+                const dx = reCenter.x - leCenter.x, dy = reCenter.y - leCenter.y;
+                const rollAngle = Math.abs(Math.atan2(dy, dx) * 180 / Math.PI);
+                
+                // NỚI LỎNG GÓC NGHIÊNG ĐẦU (Tới 20 độ)
+                const isHeadTilted = rollAngle > 20 && rollAngle < 160; 
+                
+                const eyeCenterX = (leCenter.x + reCenter.x) / 2, eyeCenterY = (leCenter.y + reCenter.y) / 2;
+                const eyeDist = Math.sqrt(dx*dx + dy*dy);
+                const yawOffset = Math.abs(noseTip.x - eyeCenterX) / eyeDist;
+                
+                // NỚI LỎNG GÓC QUAY MẶT SANG HAI BÊN
+                const isHeadTurned = yawOffset > 0.35; 
+
+                const distEyeNose = noseTip.y - eyeCenterY, distNoseChin = chin.y - noseTip.y;
+                const pitchRatio = distEyeNose / distNoseChin;
+                
+                // NỚI LỎNG GÓC CÚI / NGỬA
+                const isHeadUp = pitchRatio < 0.4, isHeadDown = pitchRatio > 1.5; 
+
+                if (isHeadTilted) { resetCountdown("⚠️ Vui lòng không nghiêng quá nhiều");
+                } else if (isHeadTurned) { resetCountdown("⚠️ Vui lòng nhìn vào chính giữa");
+                } else if (isHeadUp) { resetCountdown("⚠️ Hơi hạ cằm xuống 1 chút");
+                } else if (isHeadDown) { resetCountdown("⚠️ Hơi nâng cằm lên 1 chút");
+                } else {
+                  scanTimer += frameIntervalMs; collectedDescriptors.push(detection.descriptor);
+                  progressBar.style.width = `${Math.min(100, (scanTimer / targetTimeMs) * 100)}%`; guideCircle.classList.add('active');
+                  statusBox.innerText = "Đang chụp..."; statusBox.style.color = "#34d399"; 
+                  if (scanTimer >= targetTimeMs) { isScanningActive = false; processCapturedPhoto(); return; }
+                }
+              } else { resetCountdown("⚠ Hãy đưa mặt vào giữa khung tròn"); }
+            } else { resetCountdown("🔍 Đang tìm khuôn mặt..."); }
+          } catch (err) {}
+        }
+        if (isScanningActive) requestAnimationFrame(detectFrame);
       };
-      detectFrame();
+      requestAnimationFrame(detectFrame);
+    }
+
+    function resetCountdown(msg) {
+      if (scanTimer > 0) { 
+        scanTimer = 0; progressBar.style.width = '0%'; guideCircle.classList.remove('active'); 
+        statusBox.innerText = msg; statusBox.style.color = "#f87171"; collectedDescriptors = []; 
+      } else {
+        statusBox.innerText = msg; statusBox.style.color = "#94a3b8";
+      }
+    }
+
+    async function processCapturedPhoto() {
+      video.pause(); 
+      const canvas = document.createElement('canvas'); canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      if (currentFacingMode === "user") { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); }
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const avgDescriptor = getAverageDescriptor(collectedDescriptors);
+      tempImageBase64 = canvas.toDataURL('image/jpeg', 0.85);
+
+      if (existingFaceMatcher) {
+        const matchResult = existingFaceMatcher.findBestMatch(new Float32Array(avgDescriptor));
+        if (matchResult.label !== "unknown") {
+          showDuplicateScreen(matchResult.label, tempImageBase64);
+          return;
+        }
+      }
+
+      tempDescriptor = avgDescriptor;
+      document.getElementById('section-scan').style.display = 'none';
+      document.getElementById('section-confirm').style.display = 'block';
+      document.getElementById('preview-img').src = tempImageBase64;
+      document.getElementById('header-subtitle').innerText = "Vui lòng kiểm tra lại ảnh";
+    }
+
+    function retakePhoto() {
+      document.getElementById('section-confirm').style.display = 'none';
+      resetToScanMode();
+    }
+    
+    function resetToScanMode() {
+      document.getElementById('section-duplicate').style.display = 'none';
+      document.getElementById('section-success').style.display = 'none';
+      document.getElementById('section-scan').style.display = 'flex';
+      document.getElementById('header-subtitle').innerText = "Hệ thống sẽ tự động chụp ảnh";
+      
+      scanTimer = 0; collectedDescriptors = []; progressBar.style.width = '0%'; guideCircle.classList.remove('active');
+      startCamera(currentFacingMode); 
+    }
+
+    function confirmAndSave() {
+      const btnSave = document.getElementById('btn-save'); btnSave.disabled = true; btnSave.innerHTML = "⏳ Đang xử lý...";
+
+      const now = new Date();
+      const yy = String(now.getFullYear()).slice(-2), mm = String(now.getMonth() + 1).padStart(2, '0'), dd = String(now.getDate()).padStart(2, '0');
+      const datePrefix = yy + mm + dd; 
+      let isUnique = false, newId = "";
+      while (!isUnique) {
+        newId = datePrefix + Math.floor(10000 + Math.random() * 90000).toString();
+        if (!listExistingIDs.includes(newId)) isUnique = true;
+      }
+      const timeWeb = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')} ${dd}/${mm}/${now.getFullYear()}`;
+
+      document.getElementById('section-confirm').style.display = 'none';
+      showSuccessScreen(newId, timeWeb, tempImageBase64);
+
+      const payload = { id: newId, faceData: JSON.stringify(tempDescriptor), time: timeWeb, imageBase64: tempImageBase64 };
+      fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
+        .then(response => response.json())
+        .then(res => {
+          if(res.status === "success") {
+            const syncUI = document.getElementById('sync-status');
+            syncUI.innerText = "✅ Đồng bộ máy chủ hoàn tất!"; syncUI.style.color = "#34D399";
+            btnSave.disabled = false; btnSave.innerHTML = "✅ Lưu ngay"; 
+            fetchDatabaseAsync(); 
+          }
+        }).catch(e => {
+          const syncUI = document.getElementById('sync-status');
+          syncUI.innerText = "⚠ Lỗi đồng bộ. Hãy kiểm tra mạng!"; syncUI.style.color = "#f87171";
+          btnSave.disabled = false; btnSave.innerHTML = "✅ Lưu ngay";
+        });
+    }
+
+    function getAverageDescriptor(descriptors) {
+      if (descriptors.length === 0) return [];
+      const len = descriptors[0].length, avg = new Float32Array(len);
+      for (let i = 0; i < len; i++) {
+        let sum = 0; for (let j = 0; j < descriptors.length; j++) sum += descriptors[j][i];
+        avg[i] = sum / descriptors.length;
+      }
+      return Array.from(avg);
+    }
+
+    function showDuplicateScreen(id, capturedImg) {
+      stopCamera();
+      document.getElementById('section-scan').style.display = 'none';
+      document.getElementById('section-duplicate').style.display = 'block';
+      document.getElementById('header-subtitle').innerText = "Khuôn mặt đã được đăng ký";
+
+      const existingEmp = employeeDatabase[id];
+      document.getElementById('dup-id').innerText = id;
+      document.getElementById('dup-time').innerText = existingEmp && existingEmp.time ? existingEmp.time : "Đã có trên hệ thống";
+      
+      const avatarToDisplay = existingEmp && existingEmp.image ? getDirectImageUrl(existingEmp.image) : capturedImg;
+      document.getElementById('dup-img').src = avatarToDisplay;
+    }
+
+    function showSuccessScreen(id, time, imageSrc) {
+      stopCamera(); 
+      document.getElementById('section-success').style.display = 'block';
+      document.getElementById('header-subtitle').innerText = "Hoàn tất thủ tục";
+      document.getElementById('success-id').innerText = id;
+      document.getElementById('success-time').innerText = time;
+      document.getElementById('success-img').src = imageSrc;
+    }
+
+    function copyID(elementId, btn) {
+      const text = document.getElementById(elementId).innerText;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          const originalHTML = btn.innerHTML; btn.innerHTML = "✅ Đã chép"; btn.classList.add("copied");
+          setTimeout(() => { btn.innerHTML = originalHTML; btn.classList.remove("copied"); }, 2000);
+        });
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = text; document.body.appendChild(textArea); textArea.select();
+        document.execCommand("copy"); document.body.removeChild(textArea);
+        const originalHTML = btn.innerHTML; btn.innerHTML = "✅ Đã chép"; btn.classList.add("copied");
+        setTimeout(() => { btn.innerHTML = originalHTML; btn.classList.remove("copied"); }, 2000);
+      }
     }
   </script>
 </body>
