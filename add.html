@@ -54,11 +54,11 @@
       <video id="video" autoplay muted playsinline></video>
     </div>
 
-    <div id="info-box" class="info-box loading">
-      <div id="info-visual" class="info-visual"><div class="mini-spinner"></div></div>
+    <div id="info-box" class="info-box hide">
+      <div id="info-visual" class="info-visual"></div>
       <div class="info-content">
-        <span id="info-subtitle" class="info-subtitle">HỆ THỐNG</span>
-        <span id="info-title" class="info-title">Đang tải dữ liệu AI...</span>
+        <span id="info-subtitle" class="info-subtitle"></span>
+        <span id="info-title" class="info-title"></span>
       </div>
     </div>
   </div>
@@ -67,7 +67,6 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx3nnZ45NKjve47jyhHHYYUTYxYExbxcoBGbn5SzfBHKBQtvtQ8HQSoyLopq7S4fJb9/exec"; 
     
     let faceMatcher = null, canvas = null, displaySize = null, currentFacingMode = "user", currentStream = null, isRunning = false, employeeData = {}, lastScanLabel = ""; 
-    // Biến DataReady để ghi nhớ trạng thái đã tải
     let isModelsLoaded = false, isDataReady = false; 
 
     const video = document.getElementById('video'), container = document.getElementById('container'), btnSwitch = document.getElementById('btn-switch');
@@ -101,12 +100,7 @@
     }
 
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden) {
-        stopCamera();
-      } else {
-        // Chỉ cần mở lại camera, dữ liệu AI & Database ĐÃ CÓ SẴN (isDataReady = true)
-        if (isDataReady && !isRunning) startCamera(currentFacingMode);
-      }
+      if (document.hidden) { stopCamera(); } else { if (isDataReady && !isRunning) startCamera(currentFacingMode); }
     });
     window.addEventListener("pagehide", stopCamera);
     window.addEventListener("beforeunload", stopCamera);
@@ -124,7 +118,6 @@
         return; 
       }
 
-      // CHỈ CHẠY 1 LẦN DUY NHẤT LÚC KHỞI ĐỘNG
       initSystem();
     }
 
@@ -132,41 +125,52 @@
       startCamera(currentFacingMode); 
       await loadModels();                   
       await fetchDatabaseAsync(); 
-      // Đặt hẹn giờ để máy cập nhật ngầm Data mỗi 5 phút (nếu có người khác đăng ký máy khác)
       setInterval(fetchDatabaseAsync, 300000); 
     }
 
     async function loadModels() {
-      if (isModelsLoaded) return; // Nếu đã tải thì bỏ qua
+      if (isModelsLoaded) return;
       try {
         await faceapi.nets.tinyFaceDetector.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
         await faceapi.nets.faceLandmark68Net.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
         await faceapi.nets.faceRecognitionNet.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
         isModelsLoaded = true; 
         checkAndStartApp();
-      } catch (e) { updateStatusUI('error', 'Lỗi tải hệ thống AI', 'CẢNH BÁO'); }
+      } catch (e) {}
+    }
+
+    // TĂNG ĐỘ CHÍNH XÁC: Khoảng cách từ 0.38 xuống 0.35
+    function buildFaceMatcher(data) {
+      const labeledFaceDescriptors = [];
+      employeeData = {};
+      for (let i = 0; i < data.length; i++) {
+        const empId = data[i][0], rawFaceData = data[i][2], empImage = data[i][3]; 
+        if (!empId || !rawFaceData) continue;
+        employeeData[empId] = { name: "ID: " + empId, image: empImage };
+        try {
+          const parsedArray = typeof rawFaceData === 'string' ? JSON.parse(rawFaceData) : rawFaceData;
+          if (Array.isArray(parsedArray)) labeledFaceDescriptors.push(new faceapi.LabeledFaceDescriptors(String(empId), [new Float32Array(parsedArray)]));
+        } catch (err) {}
+      }
+      if (labeledFaceDescriptors.length > 0) {
+        faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.35); // 0.35 = Rất chính xác
+        isDataReady = true; 
+        checkAndStartApp();
+      }
     }
 
     async function fetchDatabaseAsync() {
       try {
+        const cached = localStorage.getItem('FaceID_WebCache');
+        if (cached) buildFaceMatcher(JSON.parse(cached));
+      } catch(e) {}
+
+      try {
         const response = await fetch(SCRIPT_URL);
         const result = await response.json();
-        if (result.status === "success") {
-          const labeledFaceDescriptors = [];
-          for (let i = 0; i < result.data.length; i++) {
-            const empId = result.data[i][0], rawFaceData = result.data[i][2], empImage = result.data[i][3]; 
-            if (!empId || !rawFaceData) continue;
-            employeeData[empId] = { name: "ID: " + empId, image: empImage };
-            try {
-              const parsedArray = typeof rawFaceData === 'string' ? JSON.parse(rawFaceData) : rawFaceData;
-              if (Array.isArray(parsedArray)) labeledFaceDescriptors.push(new faceapi.LabeledFaceDescriptors(String(empId), [new Float32Array(parsedArray)]));
-            } catch (err) {}
-          }
-          if (labeledFaceDescriptors.length > 0) {
-            faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.38);
-            isDataReady = true; 
-            checkAndStartApp();
-          }
+        if (result.status === "success" && result.data.length > 0) {
+          localStorage.setItem('FaceID_WebCache', JSON.stringify(result.data));
+          buildFaceMatcher(result.data);
         }
       } catch (error) {}
     }
@@ -196,7 +200,6 @@
     }
 
     function checkAndStartApp() {
-      // Chỉ chạy vòng quét khi có đủ Models, Data và Camera đang hoạt động
       if (isModelsLoaded && isDataReady && video.readyState >= 2 && !isRunning) {
         updateStatusUI('hide'); 
         btnSwitch.style.display = 'flex';
@@ -206,7 +209,8 @@
 
     async function startSmoothRecognition() {
       isRunning = true; updateStatusUI('hide');
-      const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.6 });
+      // TĂNG ĐỘ CHÍNH XÁC QUÉT: inputSize từ 416 lên 512, scoreThreshold từ 0.6 lên 0.7
+      const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 512, scoreThreshold: 0.7 });
       const ctx = canvas.getContext('2d');
 
       const detectFrame = async () => {
