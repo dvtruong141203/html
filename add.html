@@ -95,14 +95,7 @@
     window.onload = () => { 
       const ua = navigator.userAgent || navigator.vendor || window.opera;
       const inApp = (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Zalo") > -1) || (ua.indexOf("Instagram") > -1) || (ua.indexOf("TikTok") > -1);
-      
-      if (inApp) {
-        const url = window.location.href;
-        const noProtocolUrl = url.replace(/^https?:\/\//, '');
-        if (/android/i.test(ua)) { window.location.href = `intent://${noProtocolUrl}#Intent;scheme=https;package=com.android.chrome;end`; } 
-        else if (/iphone|ipad|ipod/i.test(ua)) { window.location.href = `googlechrome://${noProtocolUrl}`; }
-        return; 
-      }
+      if (inApp) return;
       initSystem();
     }
 
@@ -135,8 +128,9 @@
           if (Array.isArray(parsedArray)) labeledFaceDescriptors.push(new faceapi.LabeledFaceDescriptors(String(empId), [new Float32Array(parsedArray)]));
         } catch (err) {}
       }
-      if (labeledFaceDescriptors.length > 0) {
-        faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.55);
+      if (labeledDescriptors.length > 0) {
+        // ĐỘ KHẮT KHE CAO (0.35) ĐỂ KHÔNG NHẬN DIỆN NHẦM
+        faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.35);
         isDataReady = true; checkAndStartApp();
       }
     }
@@ -160,7 +154,6 @@
     async function startCamera(facingMode) {
       stopCamera();
       try {
-        // GIỚI HẠN ĐỘ PHÂN GIẢI 720P ĐỂ CAMERA CHẠY MƯỢT KHÔNG GIẬT LAG
         currentStream = await navigator.mediaDevices.getUserMedia({ 
           video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: facingMode } 
         });
@@ -193,10 +186,11 @@
 
     async function startSmoothRecognition() {
       isRunning = true; updateStatusUI('hide');
-      const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.3 });
+      // ĐỘ QUÉT LỚN NHẤT (inputSize: 608), ĐỘ KHẮT KHE (scoreThreshold: 0.5)
+      const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 608, scoreThreshold: 0.5 });
       const ctx = canvas.getContext('2d');
       let lastFrameTime = 0;
-      const fpsInterval = 100; // GIÃN CÁCH NHỊP QUÉT ĐỂ CHỐNG GIẬT LAG CHO CPU
+      const fpsInterval = 100;
 
       const detectFrame = async (timestamp) => {
         if (!isRunning || video.paused || !faceMatcher) return;
