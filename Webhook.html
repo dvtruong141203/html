@@ -370,11 +370,10 @@
             jsonHistory.forEach((item) => {
                 let div = document.createElement('div');
                 div.className = 'history-item';
-                // Đảm bảo item luôn hiển thị đúng nguyên bản khi lưu (dạng chuỗi)
                 let textStr = typeof item === 'string' ? item : JSON.stringify(item);
                 div.textContent = textStr;
                 div.onclick = () => {
-                    rawJsonInput.value = textStr; // Click vào đưa ngược lên y xì đúc
+                    rawJsonInput.value = textStr;
                     handleValidate();
                     historyModal.classList.remove('active');
                 };
@@ -408,28 +407,27 @@
             localStorage.setItem('gas_webhook_url', webhookUrlInput.value);
         };
 
-        // Hàm xử lý việc Preview, LUÔN LUÔN cho gửi
+        // KHÔNG CÒN BÁO LỖI NỮA
         function handleValidate() {
             var text = rawJsonInput.value;
             localStorage.setItem('gas_raw_json', text);
 
-            // BỎ QUA HẾT LỖI: Luôn mở khoá nút Submit
-            sendBtn.disabled = false;
+            sendBtn.disabled = false; // Luôn mở khoá nút Gửi
 
             if (!text.trim()) {
                 jsonPreview.textContent = "";
-                jsonPreview.style.color = "var(--warning)";
                 return;
             }
 
             try {
+                // Thử format nếu là JSON chuẩn
                 let parsedPayload = JSON.parse(text);
                 jsonPreview.textContent = JSON.stringify(parsedPayload, null, 4);
                 jsonPreview.style.color = "var(--warning)";
             } catch (err) {
-                // In y chang nội dung người dùng nhập kèm một thông báo nhỏ gọn
-                jsonPreview.textContent = "[Cảnh báo: Dữ liệu không phải là JSON chuẩn]\n\n" + text;
-                jsonPreview.style.color = "var(--error)";
+                // Nếu không phải JSON, in y chang đoạn text đó, không có chữ lỗi nào
+                jsonPreview.textContent = text;
+                jsonPreview.style.color = "var(--warning)";
             }
         }
 
@@ -437,7 +435,6 @@
 
         sendBtn.onclick = function() {
             var url = webhookUrlInput.value.trim();
-            // Lấy trực tiếp toàn bộ dữ liệu nhập thô
             var payloadToSend = rawJsonInput.value; 
 
             errorBox.style.display = 'none'; responseBox.style.display = 'block';
@@ -456,7 +453,7 @@
                 method: 'POST',
                 redirect: 'follow',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: payloadToSend // GỬI DỮ LIỆU THÔ (RAW STRING) TRỰC TIẾP
+                body: payloadToSend 
             })
             .then(function(response) {
                 return response.text().then(function(resultText) {
@@ -465,11 +462,11 @@
                         responseBox.style.color = "var(--success)";
                         responseBox.textContent = JSON.stringify(parsedJson, null, 4);
                     } catch (e) {
-                        // Nếu kết quả trả về không phải JSON thì in nguyên bản kết quả đó ra
+                        // Lấy đúng những gì server phản hồi (nguyên bản)
                         responseBox.style.color = "var(--success)";
                         responseBox.textContent = resultText;
                     }
-                    saveToHistory(payloadToSend); // Lưu thô vào lịch sử
+                    saveToHistory(payloadToSend); 
                     sendBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:18px; height:18px;"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" /></svg> GỬI DỮ LIỆU TỚI SERVER`;
                     sendBtn.disabled = false;
                 });
