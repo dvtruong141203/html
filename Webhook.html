@@ -138,6 +138,10 @@
             flex-grow: 1; 
             resize: none; 
             line-height: 1.6;
+            /* Ép tự xuống dòng khi có chuỗi dài */
+            white-space: pre-wrap; 
+            word-break: break-all; 
+            overflow-wrap: break-word;
         }
 
         .btn {
@@ -172,7 +176,12 @@
         pre {
             padding: 14px; margin: 0; font-family: 'Fira Code', monospace;
             font-size: 13px; flex-grow: 1; overflow: auto; 
-            white-space: pre-wrap; word-wrap: break-word; line-height: 1.6;
+            /* Ép tự xuống dòng khi có link URL / chuỗi dài */
+            white-space: pre-wrap; 
+            word-wrap: break-word; 
+            word-break: break-all; 
+            overflow-wrap: break-word;
+            line-height: 1.6;
         }
 
         #jsonPreview { color: var(--warning); }
@@ -215,28 +224,27 @@
         .history-item:hover { background: rgba(59, 130, 246, 0.1); border-color: var(--primary); color: var(--primary); }
         .empty-history { text-align: center; color: var(--text-muted); font-size: 13px; padding: 20px 0; }
 
-        /* ====== SỬA LỖI GIAO DIỆN MOBILE TẠI ĐÂY ====== */
         @media screen and (max-width: 900px) {
             body { 
-                overflow: auto; /* Cho phép cuộn trang trên mobile */
-                align-items: flex-start; /* Không căn giữa dọc trên mobile */
+                overflow: auto; 
+                align-items: flex-start; 
             }
             .container { 
                 grid-template-columns: 1fr; gap: 24px; 
-                height: auto; max-height: none; /* Bỏ giới hạn chiều cao */
+                height: auto; max-height: none; 
             }
             .col { 
                 height: auto; padding: 0; gap: 16px;
             }
             textarea {
-                flex-grow: 0; /* Ngăn text area tự giãn vô hạn */
-                height: 200px; /* Cố định chiều cao ô nhập liệu */
+                flex-grow: 0; 
+                height: 200px; 
             }
             .preview-window { 
-                height: 180px; /* Cố định chiều cao khung preview */
+                height: 180px; 
             }
             .response-window { 
-                height: 400px; /* Cố định chiều cao khung response */
+                height: 400px; 
             }
         }
     </style>
