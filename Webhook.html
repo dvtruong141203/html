@@ -34,7 +34,7 @@
             align-items: center;
             justify-content: center;
             padding: 20px; 
-            overflow: hidden; /* Tránh cuộn toàn trang nếu không cần thiết */
+            overflow: hidden; 
         }
 
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -51,8 +51,8 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px; 
-            height: calc(100vh - 40px); /* Cố định chiều cao container theo màn hình */
-            max-height: 600px; /* Giới hạn chiều cao tối đa */
+            height: calc(100vh - 40px); 
+            max-height: 600px; 
         }
 
         .col {
@@ -67,7 +67,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-shrink: 0; /* Không co lại */
+            flex-shrink: 0; 
         }
 
         label {
@@ -135,8 +135,8 @@
         }
 
         textarea {
-            flex-grow: 1; /* Tự động kéo dài chiếm khoảng trống còn lại */
-            resize: none; /* Cấm kéo giãn tay */
+            flex-grow: 1; 
+            resize: none; 
             line-height: 1.6;
         }
 
@@ -156,7 +156,6 @@
             border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;
         }
         
-        /* Chỉnh khung Preview ngắn, khung Response dài hơn */
         .preview-window { height: 35%; flex-shrink: 0; }
         .response-window { height: 65%; flex-shrink: 0; }
 
@@ -172,7 +171,7 @@
 
         pre {
             padding: 14px; margin: 0; font-family: 'Fira Code', monospace;
-            font-size: 13px; flex-grow: 1; overflow: auto; /* Tạo thanh cuộn khi nội dung dài */
+            font-size: 13px; flex-grow: 1; overflow: auto; 
             white-space: pre-wrap; word-wrap: break-word; line-height: 1.6;
         }
 
@@ -216,13 +215,29 @@
         .history-item:hover { background: rgba(59, 130, 246, 0.1); border-color: var(--primary); color: var(--primary); }
         .empty-history { text-align: center; color: var(--text-muted); font-size: 13px; padding: 20px 0; }
 
+        /* ====== SỬA LỖI GIAO DIỆN MOBILE TẠI ĐÂY ====== */
         @media screen and (max-width: 900px) {
-            body { overflow: auto; }
-            .container { 
-                grid-template-columns: 1fr; gap: 30px; 
-                height: auto; max-height: none;
+            body { 
+                overflow: auto; /* Cho phép cuộn trang trên mobile */
+                align-items: flex-start; /* Không căn giữa dọc trên mobile */
             }
-            .col { height: 500px; padding: 0; } /* Cố định chiều cao cột trên mobile */
+            .container { 
+                grid-template-columns: 1fr; gap: 24px; 
+                height: auto; max-height: none; /* Bỏ giới hạn chiều cao */
+            }
+            .col { 
+                height: auto; padding: 0; gap: 16px;
+            }
+            textarea {
+                flex-grow: 0; /* Ngăn text area tự giãn vô hạn */
+                height: 200px; /* Cố định chiều cao ô nhập liệu */
+            }
+            .preview-window { 
+                height: 180px; /* Cố định chiều cao khung preview */
+            }
+            .response-window { 
+                height: 400px; /* Cố định chiều cao khung response */
+            }
         }
     </style>
 </head>
