@@ -34,6 +34,7 @@
             align-items: center;
             justify-content: center;
             padding: 20px; 
+            overflow: hidden; /* Tránh cuộn toàn trang nếu không cần thiết */
         }
 
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -50,20 +51,23 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px; 
+            height: calc(100vh - 40px); /* Cố định chiều cao container theo màn hình */
+            max-height: 600px; /* Giới hạn chiều cao tối đa */
         }
 
         .col {
             padding: 10px; 
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            gap: 20px;
+            height: 100%;
         }
 
         .header-tools {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: -16px; /* Kéo gần lại form text */
+            flex-shrink: 0; /* Không co lại */
         }
 
         label {
@@ -73,7 +77,6 @@
             letter-spacing: 0.2px;
         }
 
-        /* Nút công cụ (Settings, History) */
         .icon-btn-group {
             display: flex;
             gap: 8px;
@@ -132,8 +135,8 @@
         }
 
         textarea {
-            height: 250px;
-            resize: vertical;
+            flex-grow: 1; /* Tự động kéo dài chiếm khoảng trống còn lại */
+            resize: none; /* Cấm kéo giãn tay */
             line-height: 1.6;
         }
 
@@ -141,7 +144,8 @@
             padding: 14px; background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
             color: #fff; border: none; border-radius: 8px; font-size: 14px;
             font-weight: 600; cursor: pointer; transition: all 0.3s ease;
-            display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: auto;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            flex-shrink: 0;
         }
         .btn:hover { opacity: 0.9; }
         .btn:active { transform: translateY(1px); }
@@ -151,10 +155,16 @@
             background: #0f172a; border: 1px solid var(--border-color);
             border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;
         }
+        
+        /* Chỉnh khung Preview ngắn, khung Response dài hơn */
+        .preview-window { height: 35%; flex-shrink: 0; }
+        .response-window { height: 65%; flex-shrink: 0; }
+
         .window-header {
             background: rgba(255,255,255,0.03); padding: 8px 14px;
             border-bottom: 1px solid var(--border-color); display: flex;
             align-items: center; gap: 10px; font-size: 12px; font-weight: 500; color: var(--text-muted);
+            flex-shrink: 0;
         }
         .dots { display: flex; gap: 6px; }
         .dot { width: 10px; height: 10px; border-radius: 50%; }
@@ -162,15 +172,14 @@
 
         pre {
             padding: 14px; margin: 0; font-family: 'Fira Code', monospace;
-            font-size: 13px; height: 160px; overflow: auto; white-space: pre-wrap;
-            word-wrap: break-word; line-height: 1.6;
+            font-size: 13px; flex-grow: 1; overflow: auto; /* Tạo thanh cuộn khi nội dung dài */
+            white-space: pre-wrap; word-wrap: break-word; line-height: 1.6;
         }
 
         #jsonPreview { color: var(--warning); }
         #responseBox { color: var(--success); }
         #errorBox { color: var(--error); display: none; }
 
-        /* MODAL STYLES */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(2, 6, 23, 0.7); backdrop-filter: blur(4px);
@@ -195,7 +204,6 @@
         }
         .close-modal:hover { color: var(--error); }
 
-        /* Danh sách lịch sử */
         .history-list {
             max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;
         }
@@ -209,14 +217,17 @@
         .empty-history { text-align: center; color: var(--text-muted); font-size: 13px; padding: 20px 0; }
 
         @media screen and (max-width: 900px) {
-            .container { grid-template-columns: 1fr; gap: 30px; }
-            .col { padding: 0; } 
+            body { overflow: auto; }
+            .container { 
+                grid-template-columns: 1fr; gap: 30px; 
+                height: auto; max-height: none;
+            }
+            .col { height: 500px; padding: 0; } /* Cố định chiều cao cột trên mobile */
         }
     </style>
 </head>
 <body>
 
-    <!-- CỬA SỔ CÀI ĐẶT API -->
     <div id="settingsModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -236,21 +247,17 @@
         </div>
     </div>
 
-    <!-- CỬA SỔ LỊCH SỬ -->
     <div id="historyModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
                 <span>🕒 Lịch sử dữ liệu (Mới nhất)</span>
                 <button class="close-modal" id="closeHistoryBtn">&times;</button>
             </div>
-            <div class="history-list" id="historyListContainer">
-                <!-- Danh sách lịch sử hiển thị tại đây -->
-            </div>
+            <div class="history-list" id="historyListContainer"></div>
         </div>
     </div>
 
     <div class="container">
-        <!-- CỘT TRÁI: CẤU HÌNH -->
         <div class="col col-left">
             <div class="header-tools">
                 <label for="rawJson">Dữ liệu JSON Payload</label>
@@ -274,9 +281,8 @@
             </button>
         </div>
 
-        <!-- CỘT PHẢI: KẾT QUẢ -->
         <div class="col col-right">
-            <div class="code-window">
+            <div class="code-window preview-window">
                 <div class="window-header">
                     <div class="dots">
                         <div class="dot dot-red"></div>
@@ -285,10 +291,10 @@
                     </div>
                     Payload Preview
                 </div>
-                <pre id="jsonPreview">Chờ dữ liệu nhập vào...</pre>
+                <pre id="jsonPreview">{}</pre>
             </div>
 
-            <div class="code-window" style="height: 100%;">
+            <div class="code-window response-window">
                 <div class="window-header">
                     <div class="dots">
                         <div class="dot dot-red"></div>
@@ -312,12 +318,11 @@
         var errorBox = document.getElementById('errorBox');
         var toggleUrlBtn = document.getElementById('toggleUrlBtn');
         
-        // Modal Elements
         var settingsModal = document.getElementById('settingsModal');
         var historyModal = document.getElementById('historyModal');
         var historyListContainer = document.getElementById('historyListContainer');
         
-        var validPayload = {};
+        var validPayload = {}; 
         var jsonHistory = [];
 
         const iconEyeOpen = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 18px; height: 18px;"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>`;
@@ -329,7 +334,7 @@
             var savedHistory = localStorage.getItem('gas_json_history');
             
             if (savedUrl) webhookUrlInput.value = savedUrl;
-            if (savedJson) rawJsonInput.value = savedJson;
+            if (savedJson !== null) rawJsonInput.value = savedJson;
             if (savedHistory) {
                 try { jsonHistory = JSON.parse(savedHistory); } catch (e) {}
             }
@@ -337,7 +342,6 @@
             handleValidate();
         };
 
-        // ===== XỬ LÝ MODAL CÀI ĐẶT API =====
         document.getElementById('openSettingsBtn').onclick = () => settingsModal.classList.add('active');
         document.getElementById('closeSettingsBtn').onclick = () => settingsModal.classList.remove('active');
         document.getElementById('saveSettingsBtn').onclick = () => {
@@ -345,7 +349,6 @@
             settingsModal.classList.remove('active');
         };
 
-        // ===== XỬ LÝ MODAL LỊCH SỬ =====
         document.getElementById('openHistoryBtn').onclick = () => {
             renderHistory();
             historyModal.classList.add('active');
@@ -359,7 +362,7 @@
                 return;
             }
             
-            jsonHistory.forEach((item, index) => {
+            jsonHistory.forEach((item) => {
                 let div = document.createElement('div');
                 div.className = 'history-item';
                 div.textContent = JSON.stringify(item);
@@ -373,15 +376,13 @@
         }
 
         function saveToHistory(payload) {
-            // Không lưu nếu trùng với cái gần nhất
             if (jsonHistory.length > 0 && JSON.stringify(jsonHistory[0]) === JSON.stringify(payload)) return;
             
-            jsonHistory.unshift(payload); // Thêm lên đầu
-            if (jsonHistory.length > 20) jsonHistory.pop(); // Giới hạn 20 lịch sử
+            jsonHistory.unshift(payload); 
+            if (jsonHistory.length > 20) jsonHistory.pop(); 
             localStorage.setItem('gas_json_history', JSON.stringify(jsonHistory));
         }
 
-        // Đóng modal khi bấm ra ngoài vùng mờ
         window.onclick = function(event) {
             if (event.target == settingsModal) settingsModal.classList.remove('active');
             if (event.target == historyModal) historyModal.classList.remove('active');
@@ -404,9 +405,11 @@
             localStorage.setItem('gas_raw_json', rawJsonInput.value);
 
             if (!text) {
-                jsonPreview.textContent = "Chờ dữ liệu nhập vào...";
+                jsonPreview.textContent = "{}";
                 jsonPreview.style.color = "var(--warning)";
-                validPayload = {}; sendBtn.disabled = false; return;
+                validPayload = {}; 
+                sendBtn.disabled = false; 
+                return;
             }
 
             try {
@@ -417,7 +420,8 @@
             } catch (err) {
                 jsonPreview.textContent = "Lỗi Cú Pháp JSON:\n" + err.message;
                 jsonPreview.style.color = "var(--error)";
-                validPayload = null; sendBtn.disabled = true;
+                validPayload = null; 
+                sendBtn.disabled = true;
             }
         }
 
@@ -430,24 +434,20 @@
             if (!url) {
                 responseBox.style.display = 'none'; errorBox.style.display = 'block';
                 errorBox.textContent = "Lỗi: Vui lòng cấu hình Webhook URL trong mục Cài đặt (⚙️)!";
-                settingsModal.classList.add('active'); // Tự động mở form API nếu trống
-                return;
-            }
-
-            if (!validPayload || Object.keys(validPayload).length === 0) {
-                responseBox.style.display = 'none'; errorBox.style.display = 'block';
-                errorBox.textContent = "Lỗi: Dữ liệu JSON đang trống hoặc không hợp lệ!";
+                settingsModal.classList.add('active'); 
                 return;
             }
 
             sendBtn.innerHTML = "Đang xử lý gửi...";
             sendBtn.disabled = true;
 
+            var payloadToSend = validPayload || {};
+
             fetch(url, {
                 method: 'POST',
                 redirect: 'follow',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify(validPayload)
+                body: JSON.stringify(payloadToSend)
             })
             .then(function(response) {
                 return response.text().then(function(resultText) {
@@ -459,7 +459,7 @@
                         responseBox.style.color = "var(--success)";
                         responseBox.textContent = resultText;
                     }
-                    saveToHistory(validPayload); // Lưu vào lịch sử khi thành công
+                    saveToHistory(payloadToSend); 
                     sendBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:18px; height:18px;"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" /></svg> GỬI DỮ LIỆU TỚI SERVER`;
                     sendBtn.disabled = false;
                 });
