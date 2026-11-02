@@ -138,7 +138,6 @@
             flex-grow: 1; 
             resize: none; 
             line-height: 1.6;
-            /* Ép tự xuống dòng khi có chuỗi dài */
             white-space: pre-wrap; 
             word-break: break-all; 
             overflow-wrap: break-word;
@@ -176,7 +175,6 @@
         pre {
             padding: 14px; margin: 0; font-family: 'Fira Code', monospace;
             font-size: 13px; flex-grow: 1; overflow: auto; 
-            /* Ép tự xuống dòng khi có link URL / chuỗi dài */
             white-space: pre-wrap; 
             word-wrap: break-word; 
             word-break: break-all; 
@@ -225,27 +223,12 @@
         .empty-history { text-align: center; color: var(--text-muted); font-size: 13px; padding: 20px 0; }
 
         @media screen and (max-width: 900px) {
-            body { 
-                overflow: auto; 
-                align-items: flex-start; 
-            }
-            .container { 
-                grid-template-columns: 1fr; gap: 24px; 
-                height: auto; max-height: none; 
-            }
-            .col { 
-                height: auto; padding: 0; gap: 16px;
-            }
-            textarea {
-                flex-grow: 0; 
-                height: 200px; 
-            }
-            .preview-window { 
-                height: 180px; 
-            }
-            .response-window { 
-                height: 400px; 
-            }
+            body { overflow: auto; align-items: flex-start; }
+            .container { grid-template-columns: 1fr; gap: 24px; height: auto; max-height: none; }
+            .col { height: auto; padding: 0; gap: 16px; }
+            textarea { flex-grow: 0; height: 200px; }
+            .preview-window { height: 180px; }
+            .response-window { height: 400px; }
         }
     </style>
 </head>
@@ -345,7 +328,6 @@
         var historyModal = document.getElementById('historyModal');
         var historyListContainer = document.getElementById('historyListContainer');
         
-        var validPayload = {}; 
         var jsonHistory = [];
 
         const iconEyeOpen = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 18px; height: 18px;"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>`;
@@ -388,9 +370,11 @@
             jsonHistory.forEach((item) => {
                 let div = document.createElement('div');
                 div.className = 'history-item';
-                div.textContent = JSON.stringify(item);
+                // Tương thích ngược với lịch sử cũ đang lưu dạng Object
+                let textStr = typeof item === 'string' ? item : JSON.stringify(item);
+                div.textContent = textStr;
                 div.onclick = () => {
-                    rawJsonInput.value = JSON.stringify(item, null, 2);
+                    rawJsonInput.value = typeof item === 'string' ? item : JSON.stringify(item, null, 2);
                     handleValidate();
                     historyModal.classList.remove('active');
                 };
@@ -398,10 +382,11 @@
             });
         }
 
-        function saveToHistory(payload) {
-            if (jsonHistory.length > 0 && JSON.stringify(jsonHistory[0]) === JSON.stringify(payload)) return;
+        function saveToHistory(payloadString) {
+            if (!payloadString) payloadString = "{}";
+            if (jsonHistory.length > 0 && jsonHistory[0] === payloadString) return;
             
-            jsonHistory.unshift(payload); 
+            jsonHistory.unshift(payloadString); 
             if (jsonHistory.length > 20) jsonHistory.pop(); 
             localStorage.setItem('gas_json_history', JSON.stringify(jsonHistory));
         }
@@ -423,35 +408,37 @@
             localStorage.setItem('gas_webhook_url', webhookUrlInput.value);
         };
 
+        // Hàm xử lý việc Preview, LUÔN LUÔN cho gửi
         function handleValidate() {
-            var text = rawJsonInput.value.replace(/^\s+|\s+$/g, '');
+            var text = rawJsonInput.value.trim();
             localStorage.setItem('gas_raw_json', rawJsonInput.value);
+
+            // BỎ QUA HẾT LỖI: Luôn mở khoá nút Submit
+            sendBtn.disabled = false;
 
             if (!text) {
                 jsonPreview.textContent = "{}";
                 jsonPreview.style.color = "var(--warning)";
-                validPayload = {}; 
-                sendBtn.disabled = false; 
                 return;
             }
 
             try {
-                validPayload = JSON.parse(text);
-                jsonPreview.textContent = JSON.stringify(validPayload, null, 4);
+                let parsedPayload = JSON.parse(text);
+                jsonPreview.textContent = JSON.stringify(parsedPayload, null, 4);
                 jsonPreview.style.color = "var(--warning)";
-                sendBtn.disabled = false;
             } catch (err) {
-                jsonPreview.textContent = "Lỗi Cú Pháp JSON:\n" + err.message;
+                // Vẫn hiện thông báo, nhưng chú thích là vẫn có thể gửi bình thường
+                jsonPreview.textContent = "⚠️ Cảnh báo: JSON không đúng chuẩn\n" + err.message + "\n\n👉 BỎ QUA LỖI: Hệ thống vẫn cho phép bạn gửi chuỗi văn bản này tới Server.";
                 jsonPreview.style.color = "var(--error)";
-                validPayload = null; 
-                sendBtn.disabled = true;
             }
         }
 
         rawJsonInput.oninput = handleValidate;
 
         sendBtn.onclick = function() {
-            var url = webhookUrlInput.value.replace(/^\s+|\s+$/g, '');
+            var url = webhookUrlInput.value.trim();
+            var payloadToSend = rawJsonInput.value.trim() || "{}"; // Gửi y xì những gì user nhập
+
             errorBox.style.display = 'none'; responseBox.style.display = 'block';
 
             if (!url) {
@@ -464,13 +451,11 @@
             sendBtn.innerHTML = "Đang xử lý gửi...";
             sendBtn.disabled = true;
 
-            var payloadToSend = validPayload || {};
-
             fetch(url, {
                 method: 'POST',
                 redirect: 'follow',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify(payloadToSend)
+                body: payloadToSend // GỬI DỮ LIỆU THÔ (RAW STRING) TRỰC TIẾP
             })
             .then(function(response) {
                 return response.text().then(function(resultText) {
