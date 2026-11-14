@@ -2,11 +2,9 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <!-- Tối ưu Viewport, ngăn chặn zoom bất thường trên iOS Safari -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Webhook Tester Studio</title>
     
-    <!-- Preconnect tối ưu tốc độ tải Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -31,12 +29,10 @@
             box-sizing: border-box; 
             margin: 0; 
             padding: 0;
-            /* Firefox scrollbars */
             scrollbar-width: thin;
             scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
         }
         
-        /* Webkit scrollbars (Chrome, Safari, Edge) */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
@@ -49,9 +45,9 @@
                 radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.12) 0px, transparent 60%),
                 radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.12) 0px, transparent 60%);
             color: var(--text-main);
-            /* Tối ưu chiều cao thực tế trên Mobile (Dynamic Viewport) */
-            min-height: 100vh;
-            min-height: 100dvh; 
+            /* KHÓA CỨNG BODY KHÔNG CHO CUỘN */
+            height: 100vh;
+            height: 100dvh; 
             display: flex;
             align-items: center;
             justify-content: center;
@@ -59,7 +55,6 @@
             overflow: hidden; 
         }
 
-        /* Xử lý tương thích nút bấm và ô nhập liệu trên iOS/Safari */
         input, textarea, button {
             -webkit-appearance: none;
             appearance: none;
@@ -71,23 +66,22 @@
             width: 100%;
             max-width: 1100px;
             background: transparent;
-            box-shadow: none;
-            border: none;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 24px; 
-            height: calc(100vh - 40px); 
-            height: calc(100dvh - 40px);
-            max-height: 640px; 
+            /* KHÓA CỨNG CONTAINER */
+            height: 100%;
+            max-height: 720px; 
         }
 
         .col {
             padding: 0; 
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 16px;
             height: 100%;
-            min-width: 0; /* Tránh tràn layout Flexbox khi text dài */
+            /* CHỐNG TRÀN CỘT KHI NỘI DUNG DÀI */
+            overflow: hidden; 
         }
 
         .header-tools {
@@ -121,7 +115,6 @@
             justify-content: center;
             cursor: pointer;
             transition: all 0.2s ease;
-            touch-action: manipulation;
         }
 
         .icon-btn:hover, .icon-btn:focus {
@@ -130,7 +123,7 @@
             border-color: var(--primary);
         }
 
-        input[type="text"], input[type="password"], textarea {
+        input[type="text"], input[type="password"] {
             width: 100%;
             padding: 14px 16px;
             background-color: var(--bg-input);
@@ -162,12 +155,26 @@
         }
 
         textarea {
-            flex-grow: 1; 
+            width: 100%;
+            padding: 14px 16px;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-main);
+            font-size: 14px;
+            font-family: 'Fira Code', monospace;
+            transition: all 0.2s ease;
+            
+            /* Ép tự cuộn bên trong thay vì phình to */
+            flex: 1; 
+            min-height: 0; 
+            overflow-y: auto; 
+            
             resize: none; 
             line-height: 1.6;
             white-space: pre-wrap; 
             word-break: break-all; 
-            overflow-wrap: anywhere; /* Hỗ trợ ngắt dòng tối đa trên mọi trình duyệt */
+            overflow-wrap: anywhere; 
         }
 
         .btn {
@@ -177,7 +184,6 @@
             font-weight: 600; cursor: pointer; transition: all 0.2s ease;
             display: flex; align-items: center; justify-content: center; gap: 8px;
             flex-shrink: 0;
-            touch-action: manipulation;
         }
         .btn:hover { opacity: 0.9; transform: translateY(-1px); }
         .btn:active { transform: translateY(1px); }
@@ -185,12 +191,13 @@
 
         .code-window {
             background: #0f172a; border: 1px solid var(--border-color);
-            border-radius: 10px; overflow: hidden; display: flex; flex-direction: column;
-            min-width: 0;
+            border-radius: 10px; 
+            display: flex; flex-direction: column;
+            overflow: hidden; 
         }
         
-        .preview-window { height: 35%; flex-shrink: 0; }
-        .response-window { height: 65%; flex-shrink: 0; }
+        .preview-window { flex: 0 0 35%; } /* Cố định chiếm 35% chiều cao cột phải */
+        .response-window { flex: 1; min-height: 0; } /* Chiếm 65% còn lại, ép cuộn nếu quá dài */
 
         .window-header {
             background: rgba(255,255,255,0.03); padding: 10px 16px;
@@ -204,7 +211,13 @@
 
         pre {
             padding: 16px; margin: 0; font-family: 'Fira Code', monospace;
-            font-size: 13px; flex-grow: 1; overflow: auto; 
+            font-size: 13px; 
+            
+            /* Ép tự cuộn bên trong, không đẩy chiều cao cha */
+            flex: 1; 
+            min-height: 0; 
+            overflow-y: auto; 
+            
             white-space: pre-wrap; 
             word-wrap: break-word; 
             word-break: break-word; 
@@ -216,9 +229,8 @@
         #responseBox { color: var(--success); }
         #errorBox { color: var(--error); display: none; }
 
-        /* Giao diện Modal nổi (Popup) */
         .modal-overlay {
-            position: fixed; inset: 0; /* Hỗ trợ mọi trình duyệt thay vì top/left/right/bottom 0 */
+            position: fixed; inset: 0; 
             background: rgba(2, 6, 23, 0.75); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
             display: none; align-items: center; justify-content: center; z-index: 1000;
             opacity: 0; transition: opacity 0.25s ease;
@@ -255,7 +267,6 @@
             overflow: hidden; 
             position: relative;
         }
-        /* Hiệu ứng mờ dần nếu lịch sử quá dài */
         .history-item::after {
             content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 20px;
             background: linear-gradient(transparent, #0f172a); pointer-events: none;
@@ -272,38 +283,39 @@
            ======================================== */
         @media screen and (max-width: 900px) {
             body { 
-                overflow-y: auto; /* Mở cuộn trên mobile */
-                align-items: flex-start; /* Căn trên cùng */
+                /* Mở khóa cuộn dọc cho toàn trang trên điện thoại */
+                height: auto; 
+                min-height: 100dvh; 
+                overflow-y: auto; 
+                align-items: flex-start; 
                 padding: 15px;
             }
             .container { 
-                grid-template-columns: 1fr; 
-                gap: 30px; 
+                display: flex; 
+                flex-direction: column;
+                gap: 20px; 
                 height: auto; 
-                max-height: none; 
+                max-height: none; /* Xóa bỏ giới hạn chiều cao tổng */
             }
             .col { 
                 height: auto; 
-                gap: 16px; 
+                overflow: visible; 
             }
-            
-            /* Sửa lỗi Safari iOS tự zoom: Yêu cầu font-size >= 16px cho input */
             input[type="text"], input[type="password"], textarea {
                 font-size: 16px; 
             }
-
-            /* Không dùng chiều cao cố định nữa, dùng min-height linh hoạt */
+            /* Gắn chết chiều cao cho các hộp thoại trên Mobile, không cho giãn thêm */
             textarea { 
-                flex-grow: 0; 
-                min-height: 220px; 
+                height: 250px; 
+                flex: none; 
             }
             .preview-window { 
-                min-height: 200px; 
-                height: auto; 
+                height: 180px; 
+                flex: none; 
             }
             .response-window { 
-                min-height: 350px; 
-                height: auto; 
+                height: 400px; 
+                flex: none; 
             }
         }
     </style>
@@ -396,7 +408,7 @@
         </div>
     </div>
 
-    <!-- LOGIC JAVASCRIPT ĐÃ ĐƯỢC TỐI ƯU CROSS-BROWSER -->
+    <!-- LOGIC JAVASCRIPT -->
     <script>
         var rawJsonInput = document.getElementById('rawJson');
         var jsonPreview = document.getElementById('jsonPreview');
@@ -415,7 +427,6 @@
         const iconEyeOpen = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>`;
         const iconEyeSlash = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>`;
 
-        // Hỗ trợ Fallback nếu localStorage bị chặn
         function safeSetStorage(key, value) {
             try { localStorage.setItem(key, value); } catch(e) {}
         }
@@ -437,7 +448,6 @@
             handleValidate();
         };
 
-        // Quản lý Modal 
         document.getElementById('openSettingsBtn').onclick = () => settingsModal.classList.add('active');
         document.getElementById('closeSettingsBtn').onclick = () => settingsModal.classList.remove('active');
         document.getElementById('saveSettingsBtn').onclick = () => {
@@ -499,11 +509,10 @@
             safeSetStorage('gas_webhook_url', webhookUrlInput.value);
         };
 
-        // Cập nhật Preview
         function handleValidate() {
             var text = rawJsonInput.value;
             safeSetStorage('gas_raw_json', text);
-            sendBtn.disabled = false; // Nút gửi luôn khả dụng
+            sendBtn.disabled = false; 
 
             if (!text.trim()) {
                 jsonPreview.textContent = "Chờ nhập dữ liệu...";
@@ -516,7 +525,6 @@
                 jsonPreview.textContent = JSON.stringify(parsedPayload, null, 4);
                 jsonPreview.style.color = "var(--warning)";
             } catch (err) {
-                // Hiển thị thô hoàn toàn nếu không phải dạng JSON
                 jsonPreview.textContent = text;
                 jsonPreview.style.color = "var(--warning)";
             }
@@ -524,7 +532,6 @@
 
         rawJsonInput.oninput = handleValidate;
 
-        // Xử lý gửi API
         sendBtn.onclick = function() {
             var url = webhookUrlInput.value.trim();
             var payloadToSend = rawJsonInput.value; 
@@ -557,21 +564,18 @@
                 let isAppError = false;
 
                 try {
-                    // Nếu là JSON
                     var parsedJson = JSON.parse(resultText);
                     if (parsedJson.status === "error" || parsedJson.error) {
                         isAppError = true;
                     }
                     responseBox.textContent = JSON.stringify(parsedJson, null, 4);
                 } catch (e) {
-                    // Nếu là Text/HTML thô
                     responseBox.textContent = resultText;
                     if (resultText.trim() === "" || resultText.toLowerCase().includes("<!doctype html>")) {
                         isAppError = true;
                     }
                 }
                 
-                // Cảnh báo màu đỏ nếu phát hiện lỗi
                 if (isHttpError || isAppError) {
                     responseBox.style.color = "var(--error)";
                 } else {
