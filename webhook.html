@@ -11,47 +11,53 @@
     
     <style>
         :root {
-            --primary: #3b82f6;
-            --primary-hover: #2563eb;
-            --accent: #06b6d4;
-            --bg-body: #020617;
-            --bg-input: rgba(30, 41, 59, 0.5);
+            /* Hệ màu Premium Dark (Zinc/Slate) */
+            --bg-body: #09090b;
+            --bg-glass: rgba(24, 24, 27, 0.65);
+            --bg-input: rgba(0, 0, 0, 0.4);
+            --bg-terminal: #000000;
+            
+            /* Viền và Text */
+            --border-color: rgba(255, 255, 255, 0.1);
+            --border-highlight: rgba(255, 255, 255, 0.2);
             --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border-color: rgba(255, 255, 255, 0.15);
+            --text-muted: #a1a1aa;
+            
+            /* Màu chức năng */
+            --primary: #6366f1;
+            --accent: #06b6d4;
             --success: #34d399;
             --warning: #fbbf24;
             --error: #f87171;
         }
 
-        /* RESET & CROSS-BROWSER SCROLLBARS */
         * { 
             box-sizing: border-box; 
             margin: 0; 
             padding: 0;
             scrollbar-width: thin;
-            scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+            scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
         }
         
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
 
         body {
-            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             background-color: var(--bg-body);
+            /* Ánh sáng nền Neon tinh tế */
             background-image: 
-                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.12) 0px, transparent 60%),
-                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.12) 0px, transparent 60%);
+                radial-gradient(circle at 15% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 40%),
+                radial-gradient(circle at 85% 100%, rgba(6, 182, 212, 0.12) 0px, transparent 40%);
             color: var(--text-main);
-            /* KHÓA CỨNG BODY KHÔNG CHO CUỘN */
             height: 100vh;
             height: 100dvh; 
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px; 
+            padding: 24px; 
             overflow: hidden; 
         }
 
@@ -64,23 +70,27 @@
 
         .container {
             width: 100%;
-            max-width: 1100px;
-            background: transparent;
+            max-width: 1200px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border-color);
+            border-top: 1px solid rgba(255,255,255,0.15); /* Hiệu ứng ánh sáng viền trên */
+            border-radius: 24px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.05);
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 24px; 
-            /* KHÓA CỨNG CONTAINER */
+            gap: 32px; 
+            padding: 24px;
             height: 100%;
-            max-height: 720px; 
+            max-height: 760px; 
         }
 
         .col {
-            padding: 0; 
             display: flex;
             flex-direction: column;
             gap: 16px;
             height: 100%;
-            /* CHỐNG TRÀN CỘT KHI NỘI DUNG DÀI */
             overflow: hidden; 
         }
 
@@ -89,46 +99,49 @@
             justify-content: space-between;
             align-items: center;
             flex-shrink: 0; 
+            padding: 0 4px;
         }
 
         label {
-            font-weight: 500;
+            font-weight: 600;
             font-size: 14px;
             color: #e2e8f0;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.2px;
         }
 
         .icon-btn-group {
             display: flex;
-            gap: 8px;
+            gap: 10px;
         }
 
         .icon-btn {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border-color);
             color: var(--text-muted);
-            border-radius: 8px;
-            width: 34px;
-            height: 34px;
+            border-radius: 10px;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.25s ease;
         }
 
-        .icon-btn:hover, .icon-btn:focus {
-            background: var(--bg-input);
+        .icon-btn:hover {
+            background: rgba(99, 102, 241, 0.1);
             color: var(--primary);
             border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
+            transform: translateY(-2px);
         }
 
         input[type="text"], input[type="password"] {
             width: 100%;
-            padding: 14px 16px;
+            padding: 14px 18px;
             background-color: var(--bg-input);
             border: 1px solid var(--border-color);
-            border-radius: 10px;
+            border-radius: 12px;
             color: var(--text-main);
             font-size: 14px;
             font-family: 'Fira Code', monospace;
@@ -138,38 +151,36 @@
         input[type="password"] { letter-spacing: 3px; }
         
         .input-wrapper { position: relative; display: flex; align-items: center; width: 100%; }
-        .input-wrapper input { padding-right: 44px; }
+        .input-wrapper input { padding-right: 48px; }
 
         .toggle-btn {
-            position: absolute; right: 8px; background: none; border: none;
+            position: absolute; right: 10px; background: none; border: none;
             color: var(--text-muted); cursor: pointer; padding: 6px;
             display: flex; align-items: center; justify-content: center;
             transition: color 0.2s ease;
         }
-        .toggle-btn:hover { color: var(--primary); }
+        .toggle-btn:hover { color: var(--accent); }
 
         input:focus, textarea:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
-            background-color: rgba(30, 41, 59, 0.85);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+            background-color: rgba(0, 0, 0, 0.6);
         }
 
         textarea {
             width: 100%;
-            padding: 14px 16px;
+            padding: 16px 18px;
             background-color: var(--bg-input);
             border: 1px solid var(--border-color);
-            border-radius: 10px;
+            border-radius: 16px;
             color: var(--text-main);
             font-size: 14px;
             font-family: 'Fira Code', monospace;
             transition: all 0.2s ease;
             
-            /* Ép tự cuộn bên trong thay vì phình to */
             flex: 1; 
             min-height: 0; 
             overflow-y: auto; 
-            
             resize: none; 
             line-height: 1.6;
             white-space: pre-wrap; 
@@ -178,50 +189,64 @@
         }
 
         .btn {
-            padding: 14px; 
+            padding: 16px; 
             background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-            color: #fff; border: none; border-radius: 10px; font-size: 15px;
-            font-weight: 600; cursor: pointer; transition: all 0.2s ease;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
+            color: #fff; 
+            border: none; 
+            border-radius: 14px; 
+            font-size: 15px;
+            font-weight: 600; 
+            letter-spacing: 0.5px;
+            cursor: pointer; 
+            transition: all 0.3s ease;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
             flex-shrink: 0;
+            box-shadow: 0 10px 20px -10px rgba(6, 182, 212, 0.5);
         }
-        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn:hover { 
+            box-shadow: 0 15px 25px -10px rgba(6, 182, 212, 0.7);
+            filter: brightness(1.1);
+            transform: translateY(-2px); 
+        }
         .btn:active { transform: translateY(1px); }
-        .btn:disabled { background: #334155; cursor: not-allowed; color: #94a3b8; opacity: 1; transform: none; }
+        .btn:disabled { 
+            background: #27272a; 
+            color: #52525b; 
+            box-shadow: none;
+            cursor: not-allowed; 
+            transform: none; 
+        }
 
         .code-window {
-            background: #0f172a; border: 1px solid var(--border-color);
-            border-radius: 10px; 
+            background: var(--bg-terminal); 
+            border: 1px solid var(--border-color);
+            border-radius: 16px; 
             display: flex; flex-direction: column;
             overflow: hidden; 
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
         }
         
-        .preview-window { flex: 0 0 35%; } /* Cố định chiếm 35% chiều cao cột phải */
-        .response-window { flex: 1; min-height: 0; } /* Chiếm 65% còn lại, ép cuộn nếu quá dài */
+        .preview-window { flex: 0 0 35%; } 
+        .response-window { flex: 1; min-height: 0; } 
 
         .window-header {
-            background: rgba(255,255,255,0.03); padding: 10px 16px;
+            background: rgba(255,255,255,0.02); 
+            padding: 12px 18px;
             border-bottom: 1px solid var(--border-color); display: flex;
-            align-items: center; gap: 10px; font-size: 13px; font-weight: 500; color: var(--text-muted);
+            align-items: center; gap: 12px; font-size: 13px; font-weight: 500; color: var(--text-muted);
             flex-shrink: 0;
         }
-        .dots { display: flex; gap: 6px; }
+        .dots { display: flex; gap: 8px; }
         .dot { width: 12px; height: 12px; border-radius: 50%; }
-        .dot-red { background: #ef4444; } .dot-yellow { background: #f59e0b; } .dot-green { background: #10b981; }
+        .dot-red { background: #ff5f56; box-shadow: 0 0 4px #ff5f56; } 
+        .dot-yellow { background: #ffbd2e; box-shadow: 0 0 4px #ffbd2e; } 
+        .dot-green { background: #27c93f; box-shadow: 0 0 4px #27c93f; }
 
         pre {
-            padding: 16px; margin: 0; font-family: 'Fira Code', monospace;
+            padding: 18px; margin: 0; font-family: 'Fira Code', monospace;
             font-size: 13px; 
-            
-            /* Ép tự cuộn bên trong, không đẩy chiều cao cha */
-            flex: 1; 
-            min-height: 0; 
-            overflow-y: auto; 
-            
-            white-space: pre-wrap; 
-            word-wrap: break-word; 
-            word-break: break-word; 
-            overflow-wrap: anywhere;
+            flex: 1; min-height: 0; overflow-y: auto; 
+            white-space: pre-wrap; word-wrap: break-word; word-break: break-word; overflow-wrap: anywhere;
             line-height: 1.6;
         }
 
@@ -229,51 +254,53 @@
         #responseBox { color: var(--success); }
         #errorBox { color: var(--error); display: none; }
 
+        /* MODAL */
         .modal-overlay {
             position: fixed; inset: 0; 
-            background: rgba(2, 6, 23, 0.75); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
             display: none; align-items: center; justify-content: center; z-index: 1000;
-            opacity: 0; transition: opacity 0.25s ease;
+            opacity: 0; transition: opacity 0.3s ease;
             padding: 20px;
         }
         .modal-overlay.active { display: flex; opacity: 1; }
         .modal-content {
-            background: #0f172a; border: 1px solid var(--border-color); border-radius: 16px;
-            width: 100%; max-width: 480px; padding: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-            transform: translateY(20px) scale(0.95); transition: all 0.25s ease;
+            background: #18181b; 
+            border: 1px solid var(--border-highlight); 
+            border-radius: 20px;
+            width: 100%; max-width: 480px; padding: 28px; 
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+            transform: translateY(20px) scale(0.95); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .modal-overlay.active .modal-content { transform: translateY(0) scale(1); }
         
         .modal-header {
             display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 20px; color: var(--text-main); font-weight: 600; font-size: 16px;
+            margin-bottom: 24px; color: var(--text-main); font-weight: 600; font-size: 18px;
         }
         .close-modal {
-            background: none; border: none; color: var(--text-muted); font-size: 24px;
+            background: none; border: none; color: var(--text-muted); font-size: 26px;
             cursor: pointer; transition: color 0.2s ease; line-height: 1;
         }
         .close-modal:hover { color: var(--error); }
 
         .history-list {
-            max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+            max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;
+            padding-right: 4px;
         }
         .history-item {
-            background: rgba(255,255,255,0.03); border: 1px solid var(--border-color);
-            border-radius: 10px; padding: 12px 14px; font-family: 'Fira Code', monospace;
+            background: rgba(255,255,255,0.02); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 14px 16px; font-family: 'Fira Code', monospace;
             font-size: 13px; color: var(--text-muted); cursor: pointer; transition: all 0.2s ease;
-            white-space: pre-wrap; 
-            word-wrap: break-word; 
-            max-height: 100px; 
-            overflow: hidden; 
-            position: relative;
+            white-space: pre-wrap; word-wrap: break-word; 
+            max-height: 120px; overflow: hidden; position: relative;
         }
         .history-item::after {
-            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 20px;
-            background: linear-gradient(transparent, #0f172a); pointer-events: none;
+            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 30px;
+            background: linear-gradient(transparent, #18181b); pointer-events: none;
         }
         .history-item:hover { 
-            background: rgba(59, 130, 246, 0.1); 
-            border-color: var(--primary); 
+            background: rgba(99, 102, 241, 0.1); 
+            border-color: rgba(99, 102, 241, 0.5); 
             color: var(--text-main); 
         }
         .empty-history { text-align: center; color: var(--text-muted); font-size: 14px; padding: 30px 0; }
@@ -283,40 +310,28 @@
            ======================================== */
         @media screen and (max-width: 900px) {
             body { 
-                /* Mở khóa cuộn dọc cho toàn trang trên điện thoại */
                 height: auto; 
                 min-height: 100dvh; 
                 overflow-y: auto; 
                 align-items: flex-start; 
-                padding: 15px;
+                padding: 16px;
             }
             .container { 
                 display: flex; 
                 flex-direction: column;
-                gap: 20px; 
+                gap: 24px; 
+                padding: 20px;
                 height: auto; 
-                max-height: none; /* Xóa bỏ giới hạn chiều cao tổng */
+                max-height: none;
+                border-radius: 20px;
             }
-            .col { 
-                height: auto; 
-                overflow: visible; 
-            }
-            input[type="text"], input[type="password"], textarea {
-                font-size: 16px; 
-            }
-            /* Gắn chết chiều cao cho các hộp thoại trên Mobile, không cho giãn thêm */
-            textarea { 
-                height: 250px; 
-                flex: none; 
-            }
-            .preview-window { 
-                height: 180px; 
-                flex: none; 
-            }
-            .response-window { 
-                height: 400px; 
-                flex: none; 
-            }
+            .col { height: auto; overflow: visible; gap: 16px;}
+            
+            input[type="text"], input[type="password"], textarea { font-size: 16px; }
+            
+            textarea { height: 250px; flex: none; }
+            .preview-window { height: 180px; flex: none; }
+            .response-window { height: 400px; flex: none; }
         }
     </style>
 </head>
@@ -326,10 +341,15 @@
     <div id="settingsModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <span>⚙️ Cấu hình Webhook URL</span>
+                <span style="display: flex; align-items: center; gap: 8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 22px; height: 22px; color: var(--primary);">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 1 1 0-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 0 1-1.44-4.282m3.102.069a18.03 18.03 0 0 1-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 0 1 8.835 2.535M10.34 6.66a23.847 23.847 0 0 0 8.835-2.535m0 0A23.74 23.74 0 0 0 18.795 3m.38 1.125a23.91 23.91 0 0 1 1.014 5.395m-1.014 8.855c-.118.38-.245.754-.38 1.125m.38-1.125a23.91 23.91 0 0 0 1.014-5.395m0-3.46c.495.413.811 1.035.811 1.73 0 .695-.316 1.317-.811 1.73m0-3.46a24.347 24.347 0 0 1 0 3.46" />
+                    </svg>
+                    Cấu hình Webhook
+                </span>
                 <button class="close-modal" id="closeSettingsBtn">&times;</button>
             </div>
-            <label for="webhookUrl" style="display:block; margin-bottom:10px;">Google Apps Script Web URL</label>
+            <label for="webhookUrl" style="display:block; margin-bottom:12px; color: var(--text-muted);">Đường dẫn Apps Script (Web URL)</label>
             <div class="input-wrapper">
                 <input type="password" id="webhookUrl" placeholder="https://script.google.com/macros/s/.../exec">
                 <button type="button" id="toggleUrlBtn" class="toggle-btn" title="Hiện/Ẩn API">
@@ -338,7 +358,7 @@
                     </svg>
                 </button>
             </div>
-            <button id="saveSettingsBtn" class="btn" style="margin-top: 20px; width: 100%;">Lưu Cấu Hình</button>
+            <button id="saveSettingsBtn" class="btn" style="margin-top: 24px; width: 100%;">Lưu Cấu Hình</button>
         </div>
     </div>
 
@@ -346,7 +366,12 @@
     <div id="historyModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <span>🕒 Lịch sử Dữ liệu (20 Mới nhất)</span>
+                <span style="display: flex; align-items: center; gap: 8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 22px; height: 22px; color: var(--accent);">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                    Lịch sử Dữ liệu (20 Mới nhất)
+                </span>
                 <button class="close-modal" id="closeHistoryBtn">&times;</button>
             </div>
             <div class="history-list" id="historyListContainer"></div>
@@ -364,7 +389,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 18px; height: 18px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
                     </button>
                     <button class="icon-btn" id="openSettingsBtn" title="Cấu hình API">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 18px; height: 18px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 18px; height: 18px;"><path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 1 1 0-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 0 1-1.44-4.282m3.102.069a18.03 18.03 0 0 1-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 0 1 8.835 2.535M10.34 6.66a23.847 23.847 0 0 0 8.835-2.535m0 0A23.74 23.74 0 0 0 18.795 3m.38 1.125a23.91 23.91 0 0 1 1.014 5.395m-1.014 8.855c-.118.38-.245.754-.38 1.125m.38-1.125a23.91 23.91 0 0 0 1.014-5.395m0-3.46c.495.413.811 1.035.811 1.73 0 .695-.316 1.317-.811 1.73m0-3.46a24.347 24.347 0 0 1 0 3.46" /></svg>
                     </button>
                 </div>
             </div>
@@ -408,7 +433,7 @@
         </div>
     </div>
 
-    <!-- LOGIC JAVASCRIPT -->
+    <!-- LOGIC JAVASCRIPT GIỮ NGUYÊN -->
     <script>
         var rawJsonInput = document.getElementById('rawJson');
         var jsonPreview = document.getElementById('jsonPreview');
