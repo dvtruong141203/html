@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <!-- Tối ưu Viewport, ngăn chặn zoom bất thường trên iOS Safari -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Webhook Tester Studio</title>
+    
+    <!-- Preconnect tối ưu tốc độ tải Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --accent: #06b6d4;
+            --bg-body: #020617;
+            --bg-input: rgba(30, 41, 59, 0.5);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.15);
+            --success: #34d399;
+            --warning: #fbbf24;
+            --error: #f87171;
+        }
+
+        /* RESET & CROSS-BROWSER SCROLLBARS */
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0;
+            /* Firefox scrollbars */
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+        }
+        
+        /* Webkit scrollbars (Chrome, Safari, Edge) */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-body);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.12) 0px, transparent 60%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.12) 0px, transparent 60%);
+            color: var(--text-main);
+            /* Tối ưu chiều cao thực tế trên Mobile (Dynamic Viewport) */
+            min-height: 100vh;
+            min-height: 100dvh; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px; 
+            overflow: hidden; 
+        }
+
+        /* Xử lý tương thích nút bấm và ô nhập liệu trên iOS/Safari */
+        input, textarea, button {
+            -webkit-appearance: none;
+            appearance: none;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            background: transparent;
+            box-shadow: none;
+            border: none;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px; 
+            height: calc(100vh - 40px); 
+            height: calc(100dvh - 40px);
+            max-height: 640px; 
+        }
+
+        .col {
+            padding: 0; 
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            height: 100%;
+            min-width: 0; /* Tránh tràn layout Flexbox khi text dài */
+        }
+
+        .header-tools {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0; 
+        }
+
+        label {
+            font-weight: 500;
+            font-size: 14px;
+            color: #e2e8f0;
+            letter-spacing: 0.3px;
+        }
+
+        .icon-btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            border-radius: 8px;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            touch-action: manipulation;
+        }
+
+        .icon-btn:hover, .icon-btn:focus {
+            background: var(--bg-input);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        input[type="text"], input[type="password"], textarea {
+            width: 100%;
+            padding: 14px 16px;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-main);
+            font-size: 14px;
+            font-family: 'Fira Code', monospace;
+            transition: all 0.2s ease;
+        }
+
+        input[type="password"] { letter-spacing: 3px; }
+        
+        .input-wrapper { position: relative; display: flex; align-items: center; width: 100%; }
+        .input-wrapper input { padding-right: 44px; }
+
+        .toggle-btn {
+            position: absolute; right: 8px; background: none; border: none;
+            color: var(--text-muted); cursor: pointer; padding: 6px;
+            display: flex; align-items: center; justify-content: center;
+            transition: color 0.2s ease;
+        }
+        .toggle-btn:hover { color: var(--primary); }
+
+        input:focus, textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+            background-color: rgba(30, 41, 59, 0.85);
+        }
+
+        textarea {
+            flex-grow: 1; 
+            resize: none; 
+            line-height: 1.6;
+            white-space: pre-wrap; 
+            word-break: break-all; 
+            overflow-wrap: anywhere; /* Hỗ trợ ngắt dòng tối đa trên mọi trình duyệt */
+        }
+
+        .btn {
+            padding: 14px; 
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: #fff; border: none; border-radius: 10px; font-size: 15px;
+            font-weight: 600; cursor: pointer; transition: all 0.2s ease;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            flex-shrink: 0;
+            touch-action: manipulation;
+        }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn:active { transform: translateY(1px); }
+        .btn:disabled { background: #334155; cursor: not-allowed; color: #94a3b8; opacity: 1; transform: none; }
+
+        .code-window {
+            background: #0f172a; border: 1px solid var(--border-color);
+            border-radius: 10px; overflow: hidden; display: flex; flex-direction: column;
+            min-width: 0;
+        }
+        
+        .preview-window { height: 35%; flex-shrink: 0; }
+        .response-window { height: 65%; flex-shrink: 0; }
+
+        .window-header {
+            background: rgba(255,255,255,0.03); padding: 10px 16px;
+            border-bottom: 1px solid var(--border-color); display: flex;
+            align-items: center; gap: 10px; font-size: 13px; font-weight: 500; color: var(--text-muted);
+            flex-shrink: 0;
+        }
+        .dots { display: flex; gap: 6px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .dot-red { background: #ef4444; } .dot-yellow { background: #f59e0b; } .dot-green { background: #10b981; }
+
+        pre {
+            padding: 16px; margin: 0; font-family: 'Fira Code', monospace;
+            font-size: 13px; flex-grow: 1; overflow: auto; 
+            white-space: pre-wrap; 
+            word-wrap: break-word; 
+            word-break: break-word; 
+            overflow-wrap: anywhere;
+            line-height: 1.6;
+        }
+
+        #jsonPreview { color: var(--warning); }
+        #responseBox { color: var(--success); }
+        #errorBox { color: var(--error); display: none; }
+
+        /* Giao diện Modal nổi (Popup) */
+        .modal-overlay {
+            position: fixed; inset: 0; /* Hỗ trợ mọi trình duyệt thay vì top/left/right/bottom 0 */
+            background: rgba(2, 6, 23, 0.75); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+            display: none; align-items: center; justify-content: center; z-index: 1000;
+            opacity: 0; transition: opacity 0.25s ease;
+            padding: 20px;
+        }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-content {
+            background: #0f172a; border: 1px solid var(--border-color); border-radius: 16px;
+            width: 100%; max-width: 480px; padding: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            transform: translateY(20px) scale(0.95); transition: all 0.25s ease;
+        }
+        .modal-overlay.active .modal-content { transform: translateY(0) scale(1); }
+        
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; color: var(--text-main); font-weight: 600; font-size: 16px;
+        }
+        .close-modal {
+            background: none; border: none; color: var(--text-muted); font-size: 24px;
+            cursor: pointer; transition: color 0.2s ease; line-height: 1;
+        }
+        .close-modal:hover { color: var(--error); }
+
+        .history-list {
+            max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+        }
+        .history-item {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border-color);
+            border-radius: 10px; padding: 12px 14px; font-family: 'Fira Code', monospace;
+            font-size: 13px; color: var(--text-muted); cursor: pointer; transition: all 0.2s ease;
+            white-space: pre-wrap; 
+            word-wrap: break-word; 
+            max-height: 100px; 
+            overflow: hidden; 
+            position: relative;
+        }
+        /* Hiệu ứng mờ dần nếu lịch sử quá dài */
+        .history-item::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 20px;
+            background: linear-gradient(transparent, #0f172a); pointer-events: none;
+        }
+        .history-item:hover { 
+            background: rgba(59, 130, 246, 0.1); 
+            border-color: var(--primary); 
+            color: var(--text-main); 
+        }
+        .empty-history { text-align: center; color: var(--text-muted); font-size: 14px; padding: 30px 0; }
+
+        /* ========================================
+           RESPONSIVE MOBILE CHO MỌI THIẾT BỊ 
+           ======================================== */
+        @media screen and (max-width: 900px) {
+            body { 
+                overflow-y: auto; /* Mở cuộn trên mobile */
+                align-items: flex-start; /* Căn trên cùng */
+                padding: 15px;
+            }
+            .container { 
+                grid-template-columns: 1fr; 
+                gap: 30px; 
+                height: auto; 
+                max-height: none; 
+            }
+            .col { 
+                height: auto; 
+                gap: 16px; 
+            }
+            
+            /* Sửa lỗi Safari iOS tự zoom: Yêu cầu font-size >= 16px cho input */
+            input[type="text"], input[type="password"], textarea {
+                font-size: 16px; 
+            }
+
+            /* Không dùng chiều cao cố định nữa, dùng min-height linh hoạt */
+            textarea { 
+                flex-grow: 0; 
+                min-height: 220px; 
+            }
+            .preview-window { 
+                min-height: 200px; 
+                height: auto; 
+            }
+            .response-window { 
+                min-height: 350px; 
+                height: auto; 
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- MODAL CÀI ĐẶT -->
+    <div id="settingsModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>⚙️ Cấu hình Webhook URL</span>
+                <button class="close-modal" id="closeSettingsBtn">&times;</button>
+            </div>
+            <label for="webhookUrl" style="display:block; margin-bottom:10px;">Google Apps Script Web URL</label>
+            <div class="input-wrapper">
+                <input type="password" id="webhookUrl" placeholder="https://script.google.com/macros/s/.../exec">
+                <button type="button" id="toggleUrlBtn" class="toggle-btn" title="Hiện/Ẩn API">
+                    <svg id="icon-eye-slash" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 20px; height: 20px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
+                    </svg>
+                </button>
+            </div>
+            <button id="saveSettingsBtn" class="btn" style="margin-top: 20px; width: 100%;">Lưu Cấu Hình</button>
+        </div>
+    </div>
+
+    <!-- MODAL LỊCH SỬ -->
+    <div id="historyModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>🕒 Lịch sử Dữ liệu (20 Mới nhất)</span>
+                <button class="close-modal" id="closeHistoryBtn">&times;</button>
+            </div>
+            <div class="history-list" id="historyListContainer"></div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <div class="container">
+        <!-- CỘT NHẬP LIỆU -->
+        <div class="col col-left">
+            <div class="header-tools">
+                <label for="rawJson">Dữ liệu Payload</label>
+                <div class="icon-btn-group">
+                    <button class="icon-btn" id="openHistoryBtn" title="Xem lịch sử">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 18px; height: 18px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                    </button>
+                    <button class="icon-btn" id="openSettingsBtn" title="Cấu hình API">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 18px; height: 18px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                    </button>
+                </div>
+            </div>
+
+            <textarea id="rawJson" placeholder='{&#10;  "sheet": "Thanh toán",&#10;  "action": "add",&#10;  "amount": "500000"&#10;}'></textarea>
+
+            <button id="sendBtn" class="btn">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:20px; height:20px;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+                </svg>
+                GỬI DỮ LIỆU TỚI SERVER
+            </button>
+        </div>
+
+        <!-- CỘT HIỂN THỊ -->
+        <div class="col col-right">
+            <div class="code-window preview-window">
+                <div class="window-header">
+                    <div class="dots">
+                        <div class="dot dot-red"></div>
+                        <div class="dot dot-yellow"></div>
+                        <div class="dot dot-green"></div>
+                    </div>
+                    Payload Preview
+                </div>
+                <pre id="jsonPreview"></pre>
+            </div>
+
+            <div class="code-window response-window">
+                <div class="window-header">
+                    <div class="dots">
+                        <div class="dot dot-red"></div>
+                        <div class="dot dot-yellow"></div>
+                        <div class="dot dot-green"></div>
+                    </div>
+                    Response Output
+                </div>
+                <pre id="responseBox">Đang chờ gửi request...</pre>
+                <pre id="errorBox"></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIC JAVASCRIPT ĐÃ ĐƯỢC TỐI ƯU CROSS-BROWSER -->
+    <script>
+        var rawJsonInput = document.getElementById('rawJson');
+        var jsonPreview = document.getElementById('jsonPreview');
+        var sendBtn = document.getElementById('sendBtn');
+        var webhookUrlInput = document.getElementById('webhookUrl');
+        var responseBox = document.getElementById('responseBox');
+        var errorBox = document.getElementById('errorBox');
+        var toggleUrlBtn = document.getElementById('toggleUrlBtn');
+        
+        var settingsModal = document.getElementById('settingsModal');
+        var historyModal = document.getElementById('historyModal');
+        var historyListContainer = document.getElementById('historyListContainer');
+        
+        var jsonHistory = [];
+
+        const iconEyeOpen = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>`;
+        const iconEyeSlash = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>`;
+
+        // Hỗ trợ Fallback nếu localStorage bị chặn
+        function safeSetStorage(key, value) {
+            try { localStorage.setItem(key, value); } catch(e) {}
+        }
+        function safeGetStorage(key) {
+            try { return localStorage.getItem(key); } catch(e) { return null; }
+        }
+
+        window.onload = function() {
+            var savedUrl = safeGetStorage('gas_webhook_url');
+            var savedJson = safeGetStorage('gas_raw_json');
+            var savedHistory = safeGetStorage('gas_raw_history');
+            
+            if (savedUrl) webhookUrlInput.value = savedUrl;
+            if (savedJson !== null) rawJsonInput.value = savedJson;
+            if (savedHistory) {
+                try { jsonHistory = JSON.parse(savedHistory); } catch (e) { jsonHistory = []; }
+            }
+            
+            handleValidate();
+        };
+
+        // Quản lý Modal 
+        document.getElementById('openSettingsBtn').onclick = () => settingsModal.classList.add('active');
+        document.getElementById('closeSettingsBtn').onclick = () => settingsModal.classList.remove('active');
+        document.getElementById('saveSettingsBtn').onclick = () => {
+            safeSetStorage('gas_webhook_url', webhookUrlInput.value);
+            settingsModal.classList.remove('active');
+        };
+
+        document.getElementById('openHistoryBtn').onclick = () => {
+            renderHistory();
+            historyModal.classList.add('active');
+        };
+        document.getElementById('closeHistoryBtn').onclick = () => historyModal.classList.remove('active');
+
+        function renderHistory() {
+            historyListContainer.innerHTML = '';
+            if (jsonHistory.length === 0) {
+                historyListContainer.innerHTML = '<div class="empty-history">Chưa có dữ liệu lịch sử nào.</div>';
+                return;
+            }
+            
+            jsonHistory.forEach((itemText) => {
+                let div = document.createElement('div');
+                div.className = 'history-item';
+                div.textContent = itemText;
+                div.onclick = () => {
+                    rawJsonInput.value = itemText;
+                    handleValidate();
+                    historyModal.classList.remove('active');
+                };
+                historyListContainer.appendChild(div);
+            });
+        }
+
+        function saveToHistory(payloadString) {
+            if (!payloadString.trim()) return;
+            if (jsonHistory.length > 0 && jsonHistory[0] === payloadString) return;
+            
+            jsonHistory.unshift(payloadString); 
+            if (jsonHistory.length > 20) jsonHistory.pop(); 
+            safeSetStorage('gas_raw_history', JSON.stringify(jsonHistory));
+        }
+
+        window.onclick = function(event) {
+            if (event.target == settingsModal) settingsModal.classList.remove('active');
+            if (event.target == historyModal) historyModal.classList.remove('active');
+        };
+
+        toggleUrlBtn.onclick = function() {
+            if (webhookUrlInput.type === 'password') {
+                webhookUrlInput.type = 'text'; 
+                toggleUrlBtn.innerHTML = iconEyeOpen;
+            } else {
+                webhookUrlInput.type = 'password'; 
+                toggleUrlBtn.innerHTML = iconEyeSlash;
+            }
+        };
+
+        webhookUrlInput.oninput = function() {
+            safeSetStorage('gas_webhook_url', webhookUrlInput.value);
+        };
+
+        // Cập nhật Preview
+        function handleValidate() {
+            var text = rawJsonInput.value;
+            safeSetStorage('gas_raw_json', text);
+            sendBtn.disabled = false; // Nút gửi luôn khả dụng
+
+            if (!text.trim()) {
+                jsonPreview.textContent = "Chờ nhập dữ liệu...";
+                jsonPreview.style.color = "var(--text-muted)";
+                return;
+            }
+
+            try {
+                let parsedPayload = JSON.parse(text);
+                jsonPreview.textContent = JSON.stringify(parsedPayload, null, 4);
+                jsonPreview.style.color = "var(--warning)";
+            } catch (err) {
+                // Hiển thị thô hoàn toàn nếu không phải dạng JSON
+                jsonPreview.textContent = text;
+                jsonPreview.style.color = "var(--warning)";
+            }
+        }
+
+        rawJsonInput.oninput = handleValidate;
+
+        // Xử lý gửi API
+        sendBtn.onclick = function() {
+            var url = webhookUrlInput.value.trim();
+            var payloadToSend = rawJsonInput.value; 
+
+            errorBox.style.display = 'none'; 
+            responseBox.style.display = 'block';
+            responseBox.style.color = "var(--text-main)";
+
+            if (!url) {
+                responseBox.style.display = 'none'; 
+                errorBox.style.display = 'block';
+                errorBox.textContent = "Lỗi: Vui lòng cấu hình Webhook URL trong mục Cài đặt (⚙️)!";
+                settingsModal.classList.add('active'); 
+                return;
+            }
+
+            sendBtn.innerHTML = "Đang xử lý...";
+            sendBtn.disabled = true;
+            responseBox.textContent = "Đang kết nối Server...";
+
+            fetch(url, {
+                method: 'POST',
+                redirect: 'follow',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: payloadToSend 
+            })
+            .then(async function(response) {
+                let isHttpError = !response.ok;
+                let resultText = await response.text();
+                let isAppError = false;
+
+                try {
+                    // Nếu là JSON
+                    var parsedJson = JSON.parse(resultText);
+                    if (parsedJson.status === "error" || parsedJson.error) {
+                        isAppError = true;
+                    }
+                    responseBox.textContent = JSON.stringify(parsedJson, null, 4);
+                } catch (e) {
+                    // Nếu là Text/HTML thô
+                    responseBox.textContent = resultText;
+                    if (resultText.trim() === "" || resultText.toLowerCase().includes("<!doctype html>")) {
+                        isAppError = true;
+                    }
+                }
+                
+                // Cảnh báo màu đỏ nếu phát hiện lỗi
+                if (isHttpError || isAppError) {
+                    responseBox.style.color = "var(--error)";
+                } else {
+                    responseBox.style.color = "var(--success)";
+                }
+
+                saveToHistory(payloadToSend); 
+                resetSendBtn();
+            })
+            .catch(function(error) {
+                responseBox.style.display = 'none'; 
+                errorBox.style.display = 'block';
+                errorBox.textContent = "❌ Lỗi mạng/kết nối:\n" + error.message + "\n\n💡 Vui lòng kiểm tra lại URL hoặc đảm bảo Apps Script được quyền truy cập (Anyone).";
+                resetSendBtn();
+            });
+        };
+
+        function resetSendBtn() {
+            sendBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:20px; height:20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" /></svg> GỬI DỮ LIỆU`;
+            sendBtn.disabled = false;
+        }
+    </script>
+</body>
+</html>
