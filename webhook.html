@@ -66,7 +66,6 @@
 
         .container {
             width: 100%;
-            /* KHUNG HÌNH TO HƠN */
             max-width: 1400px;
             background: var(--bg-glass);
             backdrop-filter: blur(24px);
@@ -80,7 +79,6 @@
             gap: 28px; 
             padding: 24px;
             height: 100%;
-            /* CHIỀU CAO TO HƠN */
             max-height: 880px; 
         }
 
@@ -102,7 +100,6 @@
 
         label {
             font-weight: 600;
-            /* CHỮ NHỎ HƠN */
             font-size: 13px;
             color: #e2e8f0;
             letter-spacing: 0.2px;
@@ -142,7 +139,6 @@
             border: 1px solid var(--border-color);
             border-radius: 10px;
             color: var(--text-main);
-            /* CHỮ NHỎ HƠN */
             font-size: 13px;
             font-family: 'Fira Code', monospace;
             transition: all 0.2s ease;
@@ -161,7 +157,6 @@
             border: 1px solid var(--border-color);
             border-radius: 12px;
             color: var(--text-main);
-            /* CHỮ NHỎ HƠN */
             font-size: 12px;
             font-family: 'Fira Code', monospace;
             transition: all 0.2s ease;
@@ -182,7 +177,6 @@
             color: #fff; 
             border: none; 
             border-radius: 10px; 
-            /* CHỮ NHỎ HƠN */
             font-size: 14px;
             font-weight: 600; 
             letter-spacing: 0.5px;
@@ -223,7 +217,6 @@
             padding: 10px 16px;
             border-bottom: 1px solid var(--border-color); display: flex;
             align-items: center; gap: 10px; font-weight: 500; color: var(--text-muted);
-            /* CHỮ NHỎ HƠN */
             font-size: 12px;
             flex-shrink: 0;
         }
@@ -235,7 +228,6 @@
 
         pre {
             padding: 14px 16px; margin: 0; font-family: 'Fira Code', monospace;
-            /* CHỮ NHỎ HƠN */
             font-size: 12px; 
             flex: 1; min-height: 0; overflow-y: auto; 
             white-space: pre-wrap; word-wrap: break-word; word-break: break-word; overflow-wrap: anywhere;
@@ -244,7 +236,6 @@
 
         #jsonPreview { color: var(--warning); }
         #responseBox { color: var(--success); }
-        #errorBox { color: var(--error); display: none; }
 
         /* MODAL */
         .modal-overlay {
@@ -259,7 +250,7 @@
             background: #18181b; 
             border: 1px solid var(--border-highlight); 
             border-radius: 16px;
-            width: 100%; max-width: 480px; padding: 24px; 
+            width: 100%; max-width: 520px; padding: 24px; 
             box-shadow: 0 25px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
             transform: translateY(20px) scale(0.95); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
@@ -276,25 +267,22 @@
         .close-modal:hover { color: var(--error); }
 
         .history-list {
-            max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
-            padding-right: 4px;
+            max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;
+            padding-right: 6px;
         }
         .history-item {
-            background: rgba(255,255,255,0.02); border: 1px solid var(--border-color);
-            border-radius: 10px; padding: 12px 14px; font-family: 'Fira Code', monospace;
-            /* CHỮ NHỎ HƠN */
-            font-size: 12px; color: var(--text-muted); cursor: pointer; transition: all 0.2s ease;
+            background: var(--bg-input); border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 14px; font-family: 'Fira Code', monospace;
+            font-size: 12px; color: var(--text-main); cursor: pointer; transition: all 0.2s ease;
             white-space: pre-wrap; word-wrap: break-word; 
-            max-height: 120px; overflow: hidden; position: relative;
-        }
-        .history-item::after {
-            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 30px;
-            background: linear-gradient(transparent, #18181b); pointer-events: none;
+            
+            /* HIỆN RÕ RÀNG: Cho phép cuộn bên trong từng lịch sử nếu dài, bỏ ::after che chữ */
+            max-height: 200px; 
+            overflow-y: auto; 
         }
         .history-item:hover { 
-            background: rgba(99, 102, 241, 0.1); 
-            border-color: rgba(99, 102, 241, 0.5); 
-            color: var(--text-main); 
+            background: rgba(99, 102, 241, 0.15); 
+            border-color: rgba(99, 102, 241, 0.6); 
         }
         .empty-history { text-align: center; color: var(--text-muted); font-size: 13px; padding: 30px 0; }
 
@@ -330,7 +318,7 @@
 </head>
 <body>
 
-    <!-- MODAL CÀI ĐẶT (ĐÃ BỎ NÚT MẮT) -->
+    <!-- MODAL CÀI ĐẶT -->
     <div id="settingsModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -343,7 +331,6 @@
                 <button class="close-modal" id="closeSettingsBtn">&times;</button>
             </div>
             <label for="webhookUrl" style="display:block; margin-bottom:10px; color: var(--text-muted);">Đường dẫn Apps Script (Web URL)</label>
-            <!-- Đổi sang type text bình thường, bỏ icon mắt -->
             <input type="text" id="webhookUrl" placeholder="https://script.google.com/macros/s/.../exec">
             <button id="saveSettingsBtn" class="btn" style="margin-top: 20px; width: 100%;">Lưu Cấu Hình</button>
         </div>
@@ -414,8 +401,8 @@
                     </div>
                     Response Output
                 </div>
+                <!-- HIỂN THỊ CHUNG 1 KHUNG CHO MỌI LỖI VÀ KẾT QUẢ -->
                 <pre id="responseBox">Đang chờ gửi request...</pre>
-                <pre id="errorBox"></pre>
             </div>
         </div>
     </div>
@@ -427,7 +414,6 @@
         var sendBtn = document.getElementById('sendBtn');
         var webhookUrlInput = document.getElementById('webhookUrl');
         var responseBox = document.getElementById('responseBox');
-        var errorBox = document.getElementById('errorBox');
         
         var settingsModal = document.getElementById('settingsModal');
         var historyModal = document.getElementById('historyModal');
@@ -534,14 +520,11 @@
             var url = webhookUrlInput.value.trim();
             var payloadToSend = rawJsonInput.value; 
 
-            errorBox.style.display = 'none'; 
-            responseBox.style.display = 'block';
             responseBox.style.color = "var(--text-main)";
 
             if (!url) {
-                responseBox.style.display = 'none'; 
-                errorBox.style.display = 'block';
-                errorBox.textContent = "Lỗi: Vui lòng cấu hình Webhook URL trong mục Cài đặt (⚙️)!";
+                responseBox.style.color = "var(--error)";
+                responseBox.textContent = "Lỗi: Vui lòng cấu hình Webhook URL trong mục Cài đặt (⚙️)!";
                 settingsModal.classList.add('active'); 
                 return;
             }
@@ -561,6 +544,13 @@
                 let resultText = await response.text();
                 let isAppError = false;
 
+                // XỬ LÝ IN KẾT QUẢ THÔ, CHÍNH XÁC NHỮNG GÌ NHẬN ĐƯỢC
+                if (!resultText && !response.ok) {
+                    resultText = `[HTTP Error ${response.status}: ${response.statusText}]`;
+                } else if (!resultText) {
+                    resultText = `[Thành công nhưng Server không trả về dữ liệu]`;
+                }
+
                 try {
                     var parsedJson = JSON.parse(resultText);
                     if (parsedJson.status === "error" || parsedJson.error) {
@@ -568,12 +558,14 @@
                     }
                     responseBox.textContent = JSON.stringify(parsedJson, null, 4);
                 } catch (e) {
+                    // In thô HTML hoặc Text lỗi
                     responseBox.textContent = resultText;
-                    if (resultText.trim() === "" || resultText.toLowerCase().includes("<!doctype html>")) {
+                    if (isHttpError || resultText.trim() === "" || resultText.toLowerCase().includes("<!doctype html>")) {
                         isAppError = true;
                     }
                 }
                 
+                // Cảnh báo màu đỏ nếu phát hiện lỗi từ server
                 if (isHttpError || isAppError) {
                     responseBox.style.color = "var(--error)";
                 } else {
@@ -584,9 +576,9 @@
                 resetSendBtn();
             })
             .catch(function(error) {
-                responseBox.style.display = 'none'; 
-                errorBox.style.display = 'block';
-                errorBox.textContent = "❌ Lỗi mạng/kết nối:\n" + error.message + "\n\n💡 Vui lòng kiểm tra lại URL hoặc đảm bảo Apps Script được quyền truy cập (Anyone).";
+                // In thô lỗi Fetch/Mạng vào thẳng ResponseBox
+                responseBox.style.color = "var(--error)";
+                responseBox.textContent = "❌ Lỗi mạng hoặc CORS (Fetch Failed):\n" + error.message + "\n\n💡 Nguyên nhân thường gặp:\n1. URL Webhook không chính xác.\n2. Apps Script chưa được Deploy ở quyền 'Anyone' (Bất kỳ ai).\n3. Lỗi CORS do Server chặn.";
                 resetSendBtn();
             });
         };
